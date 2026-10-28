@@ -44,3 +44,14 @@ test('dashboard commands and demo chat synchronize to read-only viewers',async()
   const state=await Promise.race([update,new Promise((_,reject)=>setTimeout(()=>reject(new Error('No viewer state update')),3000))]);
   assert.equal(state.round.actions,1);assert.equal(state.chat.at(-1).source,'demo');assert.equal('overlayToken'in state,false);
 });
+test('viewer state omits the moderation queue and approved notes can be withdrawn',async()=>{
+  const controller=await connect();
+  assert.equal((await emit(controller,'demo-chat',{user:'kindtester',text:'!kind Good to see everyone here.'})).ok,true);
+  const privateState=(await(await fetch(origin+'/api/bootstrap',{headers:{Cookie:session}})).json()).state;
+  const pending=privateState.lounge.pending[0];assert.ok(pending);
+  const publicState=(await(await fetch(origin+`/api/view?token=${overlayToken}`)).json()).state;
+  assert.equal(publicState.lounge.pending.length,0);assert.equal(publicState.lounge.wall.length,0);
+  assert.equal((await emit(controller,'command',{type:'approveKindness',id:pending.id})).ok,true);
+  const approved=(await(await fetch(origin+`/api/view?token=${overlayToken}`)).json()).state;
+  assert.equal(approved.lounge.wall[0].text,'Good to see everyone here.');
+});

@@ -24,7 +24,7 @@ export class TwitchBridge {
     listener.onUserSocketDisconnect(()=>{this.status.listening=false;this.notify();});
     listener.onUserSocketConnect(()=>{this.status.listening=true;this.notify();});
     listener.onChannelChatMessage(id,id,event=>{
-      this.engine.ingest(event.chatterId,event.messageText,'twitch',event.messageId);
+      this.engine.ingest(event.chatterId,event.messageText,'twitch',event.messageId,Date.now(),event.chatterDisplayName);
       // Keep the account ID for deduplication, display the public name in the recent chat feed.
       const last=this.engine.state.chat.at(-1);if(last?.id===event.messageId)last.user=event.chatterDisplayName;
       if(event.messageText.trim().toLowerCase()==='!recap'&&Date.now()-this.lastRecap>30000){

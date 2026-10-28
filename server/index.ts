@@ -23,15 +23,20 @@ let saved=initialState();try{saved=restoreState(JSON.parse(await readFile(stateF
 // round or vote with an incomplete ledger after a process restart.
 if(saved.round.status==='playing'||saved.round.status==='paused')saved.round={...initialState().round,remaining:saved.scene.duration*1000};
 if(saved.poll?.status==='open')saved.poll={...saved.poll,status:'closed',winner:null};
+// Mood-vote identity ledgers are private/in-memory, so reopen suggestions fresh.
+saved.lounge.vibeVotes=[0,0,0,0];
+saved.lounge.effects=[];
+if(saved.lounge.break.status==='running')saved.lounge.break.status='resting';
 const engine=new ForgeEngine(saved);
 const io=new Server(http,{serveClient:false,maxHttpBufferSize:16000,allowRequest:(req,cb)=>cb(null,!req.headers.origin||allowedOrigins.has(req.headers.origin))});
 const cookie=(raw='')=>raw.split(';').map(p=>p.trim().split('=')).find(p=>p[0]==='popforge_session')?.[1];
 const valid=(id?:string)=>!!id&&(sessions.get(id)??0)>Date.now();
 const equal=(a:unknown,b:string)=>typeof a==='string'&&a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 const snapshot=()=>JSON.parse(JSON.stringify(engine.state));
+const viewerSnapshot=()=>{const s=snapshot();s.lounge.pending=[];s.proposals=[];return s;};
 let broadcastTimer:ReturnType<typeof setTimeout>|undefined;
 let dirty=false;
-function notify(){dirty=true;if(!broadcastTimer)broadcastTimer=setTimeout(()=>{io.emit('state',snapshot());io.emit('twitch',bridge.status);broadcastTimer=undefined;},100);}
+function notify(){dirty=true;if(!broadcastTimer)broadcastTimer=setTimeout(()=>{io.to('control').emit('state',snapshot());io.to('viewer').emit('state',viewerSnapshot());io.emit('twitch',bridge.status);broadcastTimer=undefined;},100);}
 const bridge=new TwitchBridge(engine,notify,()=>{const r=recap(engine.state);return `${r.moments.map(m=>m.title).join(' · ')||'A new chapter is starting.'} ${r.action}`;});
 
 app.use(express.json({limit:'16kb'}));
@@ -50,7 +55,7 @@ app.get('/api/bootstrap',(req,res)=>{
 });
 app.get('/api/view',(req,res)=>{
   if(!equal(req.query.token,overlayToken))return res.status(403).json({error:'This overlay link expired. Copy a new link from the studio.'});
-  res.setHeader('Cache-Control','no-store');res.json({backend:true,state:snapshot(),twitch:bridge.status});
+  res.setHeader('Cache-Control','no-store');res.json({backend:true,state:viewerSnapshot(),twitch:bridge.status});
 });
 app.get('/api/health',(_req,res)=>res.json({ok:true,service:'popforge'}));
 app.post('/api/generate',control,async(req,res)=>{
@@ -81,7 +86,8 @@ io.use((socket,next)=>{
   next(new Error('Session expired. Reload PopForge.'));
 });
 io.on('connection',socket=>{
-  socket.emit('state',snapshot());socket.emit('twitch',bridge.status);
+  void socket.join(socket.data.role==='control'?'control':'viewer');
+  socket.emit('state',socket.data.role==='control'?snapshot():viewerSnapshot());socket.emit('twitch',bridge.status);
   let lastCommand=0;
   socket.on('command',(command,ack)=>{
     if(typeof ack!=='function')return;

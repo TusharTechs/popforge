@@ -2,13 +2,14 @@ import {useEffect,useRef,useState} from 'react';
 import type {ForgeState,Scene} from '../shared/engine';
 import {RENDERER_DOCUMENT} from './renderer';
 
-export function SceneFrame({state,scene,transparent=false,paused=false,onReady}:{state:ForgeState;scene?:Scene;transparent?:boolean;paused?:boolean;onReady?:()=>void}){
+export function SceneFrame({state,scene,transparent=false,paused=false,onReady,ambientOnly=false,forceScene=false,onInteract}:{state:ForgeState;scene?:Scene;transparent?:boolean;paused?:boolean;onReady?:()=>void;ambientOnly?:boolean;forceScene?:boolean;onInteract?:()=>void}){
   const ref=useRef<HTMLIFrameElement>(null);const [ready,setReady]=useState(false);
   const callback=useRef(onReady);callback.current=onReady;
+  const interact=useRef(onInteract);interact.current=onInteract;
   useEffect(()=>{
-    const listener=(e:MessageEvent)=>{if(e.source===ref.current?.contentWindow&&e.data?.type==='popforge:ready'){setReady(true);callback.current?.();}};
+    const listener=(e:MessageEvent)=>{if(e.source!==ref.current?.contentWindow)return;if(e.data?.type==='popforge:ready'){setReady(true);callback.current?.();}if(e.data?.type==='popforge:tap')interact.current?.();};
     window.addEventListener('message',listener);return()=>window.removeEventListener('message',listener);
   },[]);
-  useEffect(()=>{if(ready)ref.current?.contentWindow?.postMessage({type:'popforge:state',payload:{...state,scene:scene??state.scene,transparent,previewPaused:paused}},'*');},[ready,state,scene,transparent,paused]);
+  useEffect(()=>{if(ready)ref.current?.contentWindow?.postMessage({type:'popforge:state',payload:{...state,scene:scene??state.scene,transparent,previewPaused:paused,ambientOnly,forceScene}},'*');},[ready,state,scene,transparent,paused,ambientOnly,forceScene]);
   return <iframe ref={ref} title={`${scene?.name??state.scene.name} scene renderer`} sandbox="allow-scripts" srcDoc={RENDERER_DOCUMENT} className={`scene-frame ${ready?'is-ready':''}`} />;
 }

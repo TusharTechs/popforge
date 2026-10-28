@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {initialLounge,restoreLounge,MoodSchema,EnergySchema,EffectSchema,MOODS,type LoungeState,type EffectKind} from './lounge.js';
 
 export const SceneSchema = z.object({
   name: z.string().min(3).max(60), description: z.string().min(5).max(200),
@@ -15,11 +16,11 @@ export const RECIPES: { id: SceneKind; label: string; category: string; prompt: 
   { id:'garden',label:'Little chaos garden',category:'COMMUNITY GOAL',prompt:'A cozy community garden. Every !water grows a flower. Bloom together while I take a break.',scene:{name:'Little chaos garden',description:'A little water. A little chaos. Something good grows here.',kind:'garden',accent:'cyan',keyword:'bloom',duration:180,increment:5,goal:15,gravity:'low'} },
   { id:'focus',label:'Beat the meltdown',category:'FOCUS CHALLENGE',prompt:'A focus timer that counts down for three minutes. Chat cheers with !shield while I finish my task before the reactor melts.',scene:{name:'Beat the meltdown',description:'Finish the mission before the core goes critical.',kind:'focus',accent:'amber',keyword:'panic',duration:180,increment:10,goal:20,gravity:'high'} },
 ];
-export type TimelineEvent = { id: string; at: number; title: string; detail: string; type: 'scene'|'chat'|'game'|'poll'|'keyword'|'note'; source: 'demo'|'twitch'|'streamer' };
+export type TimelineEvent = { id: string; at: number; title: string; detail: string; type: 'scene'|'chat'|'game'|'poll'|'keyword'|'note'|'community'; source: 'demo'|'twitch'|'streamer' };
 export type ChatMessage = { id:string; at:number; user:string; text:string; source:'demo'|'twitch' };
 export type Poll = { id:string; question:string; options:string[]; counts:number[]; endsAt:number; status:'open'|'closed'; winner:number|null };
 export type Round = { id:string; status:'idle'|'playing'|'paused'|'ended'; deadline:number; remaining:number; shields:number; actions:number; participants:number; outcome:'saved'|'lost'|null };
-export type ForgeState = { version:1; revision:number; scene:Scene; previous:Scene[]; charge:number; round:Round; poll:Poll|null; events:TimelineEvent[]; chat:ChatMessage[]; proposals:{id:string;user:string;text:string}[]; stats:{scenes:number;rounds:number;actions:number}; settings:{reducedMotion:boolean;compact:boolean}; };
+export type ForgeState = { version:1; revision:number; scene:Scene; previous:Scene[]; charge:number; round:Round; poll:Poll|null; events:TimelineEvent[]; chat:ChatMessage[]; proposals:{id:string;user:string;text:string}[]; stats:{scenes:number;rounds:number;actions:number}; settings:{reducedMotion:boolean;compact:boolean}; lounge:LoungeState; };
 export const CommandSchema = z.discriminatedUnion('type', [
   z.object({type:z.literal('publish'),scene:SceneSchema}), z.object({type:z.literal('rollback')}),
   z.object({type:z.literal('start')}), z.object({type:z.literal('pause')}),z.object({type:z.literal('resume')}),z.object({type:z.literal('finish')}),
@@ -28,19 +29,27 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({type:z.literal('note'),text:z.string().min(3).max(240)}),
   z.object({type:z.literal('settings'),reducedMotion:z.boolean(),compact:z.boolean()}),
   z.object({type:z.literal('dismissProposal'),id:z.string().max(100)}),
+  z.object({type:z.literal('ambience'),mood:MoodSchema.optional(),energy:EnergySchema.optional(),particles:z.boolean().optional(),intensity:z.number().min(0).max(1).optional(),showBackground:z.boolean().optional()}),
+  z.object({type:z.literal('celebrate'),kind:EffectSchema}),
+  z.object({type:z.literal('takeBreak'),duration:z.number().int().min(30).max(600),message:z.string().min(3).max(120)}),
+  z.object({type:z.literal('returnFromBreak')}),
+  z.object({type:z.literal('approveKindness'),id:z.string().max(100)}),
+  z.object({type:z.literal('dismissKindness'),id:z.string().max(100)}),
+  z.object({type:z.literal('removeKindness'),id:z.string().max(100)}),
+  z.object({type:z.literal('resetVibes')}),
   z.object({type:z.literal('reset')}),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 const uid = () => globalThis.crypto.randomUUID();
 const idle = (duration=180): Round => ({id:uid(),status:'idle',deadline:0,remaining:duration*1000,shields:0,actions:0,participants:0,outcome:null});
 export function initialState(): ForgeState {
-  return {version:1,revision:0,scene:{...RECIPES[0].scene},previous:[],charge:30,round:idle(),poll:null,events:[],chat:[],proposals:[],stats:{scenes:0,rounds:0,actions:0},settings:{reducedMotion:false,compact:false}};
+  return {version:1,revision:0,scene:{...RECIPES[0].scene},previous:[],charge:30,round:idle(),poll:null,events:[],chat:[],proposals:[],stats:{scenes:0,rounds:0,actions:0},settings:{reducedMotion:false,compact:false},lounge:initialLounge()};
 }
 export function restoreState(raw: unknown): ForgeState {
   try {
     const v = raw as ForgeState;
     if(v.version !== 1 || !Number.isFinite(v.revision) || !Array.isArray(v.events) || !Array.isArray(v.chat) || !v.round || !v.stats || !v.settings) return initialState();
-    return {...v,scene:SceneSchema.parse(v.scene),previous:(v.previous??[]).slice(-3).map(s=>SceneSchema.parse(s)),events:v.events.slice(0,80),chat:v.chat.slice(-50),proposals:(v.proposals??[]).slice(0,10)};
+    return {...v,scene:SceneSchema.parse(v.scene),previous:(v.previous??[]).slice(-3).map(s=>SceneSchema.parse(s)),events:v.events.slice(0,80),chat:v.chat.slice(-50),proposals:(v.proposals??[]).slice(0,10),lounge:restoreLounge(v.lounge)};
   } catch { return initialState(); }
 }
 export function remix(prompt: string): Scene {
@@ -65,6 +74,9 @@ export class ForgeEngine {
   private votes = new Map<string,number>();
   private cooldown = new Map<string,number>();
   private seen = new Set<string>();
+  private encouragementCooldown = new Map<string,number>();
+  private moodVotes = new Map<string,number>();
+  private effectBucket={at:0,count:0};
   constructor(state=initialState()){this.state=state;}
   private record(type:TimelineEvent['type'],title:string,detail:string,source:TimelineEvent['source']='streamer',now=Date.now()) {
     this.state.events.unshift({id:uid(),at:now,type,title,detail,source});this.state.events=this.state.events.slice(0,80);
@@ -79,11 +91,14 @@ export class ForgeEngine {
       const old=s.previous.pop();if(!old)throw new Error('No previous scene to restore.');
       s.scene=old;s.round=idle(old.duration);s.charge=0;this.record('scene','Previous scene restored',`${old.name} is back on the stage.`,'streamer',now);
     } else if(c.type==='start') {
+      if(s.lounge.break.status!=='idle')throw new Error('Welcome back first, then start a new round.');
       if(s.round.status==='playing'||s.round.status==='paused')throw new Error('A round is already in progress.');
       s.round={...idle(s.scene.duration),status:'playing',deadline:now+s.scene.duration*1000};this.participants.clear();this.cooldown.clear();
       this.record('game','The community took the controls',`${s.scene.name}: ${s.scene.goal} team actions before the timer ends. Type ${s.scene.kind==='garden'?'!water':'!shield'} in chat.`,'streamer',now);
     } else if(c.type==='pause' && s.round.status==='playing'){s.round.remaining=Math.max(0,s.round.deadline-now);s.round.status='paused';
-    } else if(c.type==='resume' && s.round.status==='paused'){s.round.deadline=now+s.round.remaining;s.round.status='playing';
+    } else if(c.type==='resume' && s.round.status==='paused'){
+      if(s.lounge.break.status!=='idle')throw new Error('Use I’m back to resume after your breather.');
+      s.round.deadline=now+s.round.remaining;s.round.status='playing';
     } else if(c.type==='finish'){if(s.round.status!=='playing'&&s.round.status!=='paused')throw new Error('Start a round first.');this.end(now);
     } else if(c.type==='stop'){s.round=idle(s.scene.duration);s.charge=0;this.record('scene','Scene stopped','The streamer returned the overlay to standby.','streamer',now);
     } else if(c.type==='keyword'){this.heat(now,'streamer');
@@ -96,17 +111,42 @@ export class ForgeEngine {
     } else if(c.type==='note'){this.record('note','A moment worth remembering',c.text,'streamer',now);
     } else if(c.type==='settings'){s.settings={reducedMotion:c.reducedMotion,compact:c.compact};
     } else if(c.type==='dismissProposal'){s.proposals=s.proposals.filter(p=>p.id!==c.id);
-    } else if(c.type==='reset'){this.state=initialState();this.participants.clear();this.cooldown.clear();this.votes.clear();this.seen.clear();}
+    } else if(c.type==='ambience'){
+      const old=s.lounge.mood;Object.assign(s.lounge,Object.fromEntries(Object.entries(c).filter(([key,value])=>key!=='type'&&value!==undefined)));
+      if(c.mood&&c.mood!==old)this.record('community',`The room became ${MOODS.find(m=>m.id===c.mood)!.name}`,`The streamer chose a new atmosphere. Chat can suggest one with !vibe.`,'streamer',now);
+    } else if(c.type==='celebrate'){this.effect(c.kind,'Streamer',now);
+    } else if(c.type==='takeBreak'){
+      if(s.lounge.break.status!=='idle')throw new Error('A breather is already active. Return when you are ready.');
+      let pausedRoundId:string|null=null;
+      if(s.round.status==='playing'){s.round.remaining=Math.max(0,s.round.deadline-now);s.round.status='paused';pausedRoundId=s.round.id;}
+      s.lounge.break={status:'running',deadline:now+c.duration*1000,duration:c.duration,message:c.message,pausedRoundId};
+      this.record('community','A little pause, together',`The streamer took a breather. Chat can keep the room glowing with !glow, !heart, and !star.`,'streamer',now);
+    } else if(c.type==='returnFromBreak'){
+      const b=s.lounge.break;if(b.status==='idle')return this.state;
+      if(b.pausedRoundId===s.round.id&&s.round.status==='paused'){s.round.deadline=now+s.round.remaining;s.round.status='playing';}
+      s.lounge.break={...initialLounge().break};this.record('community','Welcome back. We kept the lights on.',`${s.lounge.lanterns} lanterns and ${s.lounge.hearts} hearts are part of today's story.`,'streamer',now);this.effect('lanterns','Community',now);
+    } else if(c.type==='approveKindness'){
+      const k=s.lounge.pending.find(k=>k.id===c.id);if(!k)throw new Error('That note is no longer pending.');
+      s.lounge.pending=s.lounge.pending.filter(k=>k.id!==c.id);s.lounge.wall=[{...k,at:now},...s.lounge.wall].slice(0,9);this.effect('hearts',k.user,now);
+      this.record('community','A little kindness made it on screen',`${k.user}: ${k.text}`,k.source,now);
+    } else if(c.type==='dismissKindness'){s.lounge.pending=s.lounge.pending.filter(k=>k.id!==c.id);
+    } else if(c.type==='removeKindness'){
+      const k=s.lounge.wall.find(k=>k.id===c.id);
+      if(k)s.events=s.events.filter(e=>!(e.type==='community'&&e.title==='A little kindness made it on screen'&&e.detail===`${k.user}: ${k.text}`));
+      s.lounge.wall=s.lounge.wall.filter(k=>k.id!==c.id);
+    } else if(c.type==='resetVibes'){s.lounge.vibeVotes=[0,0,0,0];this.moodVotes.clear();
+    } else if(c.type==='reset'){this.state=initialState();this.participants.clear();this.cooldown.clear();this.votes.clear();this.seen.clear();this.encouragementCooldown.clear();this.moodVotes.clear();}
     return this.changed();
   }
   private heat(now:number,source:TimelineEvent['source']){
+    if(this.state.lounge.break.status!=='idle')return;
     const s=this.state;const before=s.charge;s.charge=Math.min(100,s.charge+s.scene.increment);
     if(before<100&&s.charge===100){this.record('keyword','The reactor went critical',`The “${s.scene.keyword}” meter hit 100%. Meteor mode activated.` ,source,now);}
   }
-  ingest(user:string,text:string,source:'demo'|'twitch',messageId:string=uid(),now=Date.now()) {
+  ingest(user:string,text:string,source:'demo'|'twitch',messageId:string=uid(),now=Date.now(),displayName=user) {
     if(this.seen.has(messageId))return this.state;
     this.seen.add(messageId);if(this.seen.size>20000)this.seen.delete(this.seen.values().next().value!);
-    const s=this.state;const clean=text.slice(0,500);const who=user.slice(0,40);
+    const s=this.state;const clean=text.slice(0,500);const who=displayName.slice(0,40);
     s.chat.push({id:messageId,at:now,user:who,text:clean,source});s.chat=s.chat.slice(-50);
     const vote=clean.trim().match(/^!vote\s+([123])$/i);
     if(s.poll?.status==='open'&&now<s.poll.endsAt&&vote){
@@ -114,6 +154,19 @@ export class ForgeEngine {
       if(prev!==choice){if(prev!==undefined)s.poll.counts[prev]--;s.poll.counts[choice]++;this.votes.set(user,choice);}
     }
     const command=clean.trim().toLowerCase();
+    const vibe=command.match(/^!vibe\s+(starlight|rain|aurora|sunset)$/)?.[1];
+    if(vibe){const choice=MOODS.findIndex(m=>m.id===vibe);const prior=this.moodVotes.get(user);if(prior!==choice){if(prior!==undefined)s.lounge.vibeVotes[prior]=Math.max(0,s.lounge.vibeVotes[prior]-1);s.lounge.vibeVotes[choice]++;this.moodVotes.set(user,choice);}}
+    if(['!heart','!hug','!glow','!star','!hype'].includes(command)&&now-(this.encouragementCooldown.get(user)??-Infinity)>=4000){
+      this.encouragementCooldown.set(user,now);if(this.encouragementCooldown.size>50000)this.encouragementCooldown.delete(this.encouragementCooldown.keys().next().value!);
+      const before=s.lounge.jars;
+      if(command==='!heart'||command==='!hug'){s.lounge.hearts++;s.lounge.jars=Math.floor(s.lounge.hearts/12);this.effect('hearts',who,now);}
+      if(command==='!glow'){s.lounge.lanterns++;this.effect('lanterns',who,now);}
+      if(command==='!star'){s.lounge.stars++;this.effect('stars',who,now);}
+      if(command==='!hype')this.effect('confetti',who,now);
+      if(s.lounge.jars>before){this.record('community','Chat filled a kindness jar',`Twelve more hearts, shared freely. ${s.lounge.jars} kindness ${s.lounge.jars===1?'jar':'jars'} filled today.`,source,now);this.effect('stars','Community',now);}
+    }
+    const kindness=clean.match(/^!kind\s+(.{3,160})$/i)?.[1];
+    if(kindness&&s.lounge.pending.length<12&&!s.lounge.pending.some(k=>k.user===who))s.lounge.pending.push({id:messageId,user:who,text:kindness,at:now,source});
     if(s.round.status==='playing'&&now<s.round.deadline&&['!shield','!water','!cheer'].includes(command)){
       if(now-(this.cooldown.get(user)??-Infinity)>=3000){
         this.cooldown.set(user,now);this.participants.add(user);s.round.actions++;s.round.shields=Math.min(s.scene.goal,s.round.actions);s.round.participants=this.participants.size;s.stats.actions++;
@@ -122,7 +175,7 @@ export class ForgeEngine {
     }
     if(clean.toLowerCase().split(/\W+/).includes(s.scene.keyword.toLowerCase()))this.heat(now,source);
     const idea=clean.match(/^!forge\s+(.{3,240})$/i)?.[1];
-    if(idea&&s.proposals.length<10&&!s.proposals.some(p=>p.user===user))s.proposals.push({id:messageId,user:who,text:idea});
+    if(idea&&s.proposals.length<10&&!s.proposals.some(p=>p.user===who))s.proposals.push({id:messageId,user:who,text:idea});
     return this.changed();
   }
   private closePoll(now:number){
@@ -131,6 +184,12 @@ export class ForgeEngine {
     const tied=p.counts.filter(c=>c===max).length>1;
     this.record('poll',p.winner===null?'The vote ended without votes':`Chat chose ${p.options[p.winner]}`,p.winner===null?'The streamer can choose the next twist.':`${p.counts.reduce((a,b)=>a+b,0)} votes. ${tied?'Tie resolved by the first listed option. ':''}Preview the twist before publishing.`,'streamer',now);
   }
+  private effect(kind:EffectKind,user:string,now:number){
+    const l=this.state.lounge;if(l.energy==='quiet'||!l.particles)return;
+    if(now-this.effectBucket.at>=1000)this.effectBucket={at:now,count:0};
+    if(this.effectBucket.count>=4)return;this.effectBucket.count++;
+    l.effects=[...l.effects.filter(e=>now-e.at<8000),{id:uid(),kind,at:now,user:user.slice(0,40)}].slice(-12);
+  }
   private end(now:number){
     const s=this.state;if(s.round.status==='ended')return;
     const saved=s.round.shields>=s.scene.goal;s.round.status='ended';s.round.remaining=0;s.round.outcome=saved?'saved':'lost';s.stats.rounds++;
@@ -138,6 +197,7 @@ export class ForgeEngine {
   }
   tick(now=Date.now()){
     let changed=false;
+    if(this.state.lounge.break.status==='running'&&now>=this.state.lounge.break.deadline){this.state.lounge.break.status='resting';changed=true;}
     if(this.state.round.status==='playing'&&now>=this.state.round.deadline){this.end(now);changed=true;}
     if(this.state.poll?.status==='open'&&now>=this.state.poll.endsAt){this.closePoll(now);changed=true;}
     return changed?this.changed():null;
@@ -146,6 +206,6 @@ export class ForgeEngine {
 
 export function recap(state:ForgeState,windowMs=15*60*1000,now=Date.now()){
   const recent=state.events.filter(e=>e.at>=now-windowMs);
-  const important=recent.filter(e=>e.type==='game'||e.type==='keyword'||e.type==='note'||e.type==='poll'||e.type==='scene').slice(0,3).reverse();
-  return {moments:important,action:state.round.status==='playing'?`Type ${state.scene.kind==='garden'?'!water':'!shield'} in Twitch chat to help the team.`:state.poll?.status==='open'?'Type !vote 1, !vote 2, or !vote 3 in Twitch chat.':'Suggest our next scene with !forge followed by your idea in Twitch chat.',goal:state.round.status==='playing'?`${Math.max(0,state.scene.goal-state.round.shields)} more team actions to reach the goal.`:'The next chapter is yours to help create.'};
+  const important=recent.filter(e=>e.type==='game'||e.type==='keyword'||e.type==='note'||e.type==='poll'||e.type==='scene'||e.type==='community').slice(0,3).reverse();
+  return {moments:important,action:state.lounge.break.status!=='idle'?'Type !glow or !heart in Twitch chat. Keep the room warm while the streamer takes a breather.':state.round.status==='playing'?`Type ${state.scene.kind==='garden'?'!water':'!shield'} in Twitch chat to help the team.`:state.poll?.status==='open'?'Type !vote 1, !vote 2, or !vote 3 in Twitch chat.':'Suggest our next scene with !forge followed by your idea in Twitch chat.',goal:state.lounge.break.status!=='idle'?`${state.lounge.lanterns} lanterns are keeping the lights on.`:state.round.status==='playing'?`${Math.max(0,state.scene.goal-state.round.shields)} more team actions to reach the goal.`:'The next chapter is yours to help create.'};
 }

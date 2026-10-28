@@ -36,6 +36,23 @@ npm start
 7. Complete the goal or finish the round. Open **Stream lore** to see the recorded outcome. Save a manual moment to explain a joke, then preview the catch-up card.
 8. Copy the **OBS source** URL and open it in another browser. With the companion running, both views receive the same authoritative state.
 
+## Cozy Lounge and creator comfort
+
+Open **Cozy lounge** in the sidebar, or `/?view=lounge`.
+
+- **Four live environments:** Starlit hideaway, Rainy window, Aurora drift, and Golden-hour arcade. Each is original Canvas2D artwork with bounded community lanterns and constellations. Choose **Use as OBS background** to put the environment in the overlay; previews alone do not change the broadcast.
+- **Original procedural audio:** press **Enable sound** for a generative synth/key soundscape, then mix music, filtered rain, night air, and overall volume. Optional reaction chimes start disabled. No audio downloads or external music service are used. Music never starts automatically. Browser playback and account-free demo mode are supported; actual OBS audio routing needs a live OBS check.
+- **Reactions:** `!heart` / `!hug`, `!glow`, `!star`, and `!hype` add hearts, lanterns, constellation stars, and celebration bursts. Encouragement uses a four-second per-account cooldown and visual bursts are capped at four per second. Every twelve hearts fills a persistent kindness jar. Click the lounge sky in demo mode to submit a labeled demo lantern; read-only viewers cannot mutate shared state.
+- **Community mood suggestions:** `!vibe starlight`, `!vibe rain`, `!vibe aurora`, or `!vibe sunset`. One suggestion per account, with changes allowed. Only the streamer applies the winning atmosphere. Server restarts reopen suggestions with a fresh ledger/count.
+- **Moderated kindness wall:** `!kind your message` enters a bounded approval queue. The streamer approves or dismisses it. Only approved notes appear in the room and recap; removing a note withdraws its matching lore entry too. Viewer snapshots omit the moderation queue. Recent public chat may still contain the original public Twitch command.
+- **Creator corner:** choose a one-, two-, or five-minute breather and a custom community message. An active round pauses; **I’m back** resumes it only if the breather was what paused it. Timer expiry becomes “No rush” and never auto-resumes a broadcast. A manually paused round remains paused.
+- **Gentle break nudges:** explicitly opt in and select 30, 45, 60, or 90 minutes. These are app-local, browser-private preferences displayed in the creator corner and as a discreet studio banner when due, not OS notifications or a stress detector. Snooze a due nudge for ten minutes. Studio session time is not a claim about actual Twitch broadcast duration.
+- **Comfort controls:** Gentle, Balanced, Party, or Quiet energy; adjustable sparkle intensity; separate particle and reduced-motion settings. Quiet pauses local audio and celebration bursts, while contributions still accumulate. Reduced motion stops scene motion and shows only a minimal static reaction.
+
+For sound in OBS, add a second Browser Source using the **OBS sound source** link (`/sound?token=…`), use **Interact**, and press **Enable sound** once. Route that source through OBS audio controls. Use one audio playback surface to avoid doubling the sound. The sound URL is read-only and expires with the companion session like the visual source URL.
+
+Nightshift from Meterless was reviewed as an optional future asset-generation pipeline. This build does not install, call, or depend on Nightshift, and no generated or licensed third-party tracks are bundled. See [Meterless’s engine overview](https://meterless.ai/engines.html).
+
 ## Twitch integration
 
 Create a confidential application in the [Twitch developer console](https://dev.twitch.tv/console/apps). Register this exact OAuth redirect:
@@ -75,6 +92,9 @@ The first version generates **scene data**, not arbitrary executable overlays. T
 - `src/client.ts`: server transport and browser-only demo transport.
 - `src/renderer.ts`: trusted Canvas2D simulation with simple gravity and circle collision response; no external assets or network access.
 - `src/SceneFrame.tsx`: sandboxed renderer and readiness bridge.
+- `shared/lounge.ts`: validated atmosphere, comfort, break, effects, and kindness schemas.
+- `src/Lounge.tsx`: environments, creator corner, kindness wall, community suggestions, and ambient overlay HUD.
+- `src/audio.ts` / `src/AudioDock.tsx`: opt-in procedural Web Audio engine and mixer, with an OBS sound route.
 - `src/App.tsx`: studio, library, chronicle, connections, preferences, OBS source, and viewer recap routes.
 
 The renderer runs in a sandboxed `srcdoc` iframe with scripts allowed, no same-origin privileges, and a restrictive CSP. No credentials are sent into it. No generated strings are interpolated into its executable source. The trusted renderer consumes bounded data using postMessage; the host verifies readiness by the frame's source window. Previewing a candidate leaves the published scene running. Publishing updates the existing stage without reloading the OBS route; the last three scene definitions remain available for rollback. This is a trusted-scene runtime, not a general-purpose untrusted JavaScript sandbox.
@@ -92,7 +112,7 @@ npm test
 npm run build
 ```
 
-Tests cover voting semantics and deadlines, event deduplication, cooldowns, pause/resume, win/loss outcomes, schema bounds, rollback, grounded lore, request/session protection, read-only authorization even with shared cookies, and state synchronization to viewer sockets. Browser QA covers generation/preview/publication, demo commands, voting, and navigation. Live Twitch, Codex generation, and OBS Studio itself require configured accounts/app access and are not claimed as verified.
+Tests cover voting semantics and deadlines, event deduplication, cooldowns, pause/resume, win/loss outcomes, schema bounds, rollback, grounded lore, request/session protection, read-only authorization even with shared cookies, and state synchronization to viewer sockets. Browser QA covers generation/preview/publication, demo commands, voting, navigation, ambient sound start/stop, quiet mode, lantern contributions, kindness approval, and the breather UI. Live Twitch, Codex generation, and OBS Studio itself require configured accounts/app access and are not claimed as verified.
 
 ## References
 

@@ -12,3 +12,11 @@
 - Simple particle physics illustrates the scene. Chat actions and time determine the outcome, not vision detection or particle hits.
 - Feature icons use Lucide; scene illustrations are original code-generated canvas/CSS artwork. Google Fonts is optional; system fonts remain usable offline.
 - Do not expose the local Node service to the public Internet without adding durable broadcaster identity, tenant isolation, HTTPS, persisted encrypted token storage, and public viewer transport.
+
+## Cozy Lounge notes
+
+- The music is an original procedural browser synthesizer with filtered noise, not generated audio files or a commercial music library. Playback depends on Web Audio and user activation. We verified the browser playback controls; OBS mixing and audible capture require a live OBS test.
+- Ambient effects are bounded representations of contributions, not one physics entity per viewer. Fullscreen lounge backgrounds are optional and the streamer decides when they replace the gameplay scene.
+- Break nudges are private browser-local UI reminders available while the dashboard is open. They do not infer stress, measure health, or promise to treat burnout.
+- Server restart restores an active breather as an open-ended pause, clears transient effects, and resets mood suggestion counts because identity ledgers are not persisted. Approved notes and community totals persist.
+- Nightshift was researched but is not integrated. No third-party service installation or payment is required for the comfort features.
