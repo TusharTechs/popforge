@@ -2,7 +2,7 @@
 
 - This is a single-broadcaster local companion plus a static hosted browser demo, not a multi-tenant hosted Twitch service. No five-million-viewer capacity claim is made.
 - Four trusted mechanics can be remixed; the app does not generate arbitrary executable widgets. The Codex path outputs a validated scene specification.
-- Twitch and Codex integrations require local configuration and a live account test. They are never shown as connected just because the UI works.
+- Twitch integration was live-tested on the configured broadcaster account; a second independent Twitch account has not been used. Codex generation still needs its own configured account test. Connections are not inferred from the UI demo.
 - The private hosted demo is for owner review. Browser demo state syncs only within the same browser profile. Use the companion for cross-browser/OBS synchronization.
 - The local recap page cannot be reached remotely by stream viewers. The broadcaster's authenticated `!recap` response is the first remote viewer channel. A public companion or reviewed Twitch Extension needs a later hosting/auth design.
 - Event history is capped at 80 and chat at 50 messages. A recap includes up to three recorded events from the chosen time window; it is not a full stream transcript or AI inference about gameplay.

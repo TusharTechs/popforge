@@ -65,7 +65,7 @@ Set `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` in `.env`, restart the compani
 
 Twurple manages token refresh and EventSub WebSocket reconnection. The integration reads chat and channel category, processes the commands above, and responds to `!recap` with a short event-grounded summary (channel-wide 30-second reply cooldown). OAuth state is expiring, one-use, and tied to the initiating local session. Tokens live in server memory and are discarded on restart/disconnect. Reconnect after a server restart.
 
-Demo message submission is disabled while Twitch is connected. The dashboard displays connection/subscription errors. **Real Twitch OAuth and EventSub delivery still need an account-authorized live test.** Category metadata is not gameplay-state detection.
+Demo message submission is disabled while Twitch is connected. The dashboard displays connection/subscription errors. **Live verified on October 28, 2026:** Twitch OAuth, EventSub receipt, hearts, a free vote, a game contribution, mood suggestions, moderated kindness approval, and an API recap response were exercised on `techtushstreams`. The broadcaster account acted as the chatter; a second independent Twitch account was not used. Category metadata is not gameplay-state detection.
 
 ## OBS
 
@@ -112,7 +112,7 @@ npm test
 npm run build
 ```
 
-Tests cover voting semantics and deadlines, event deduplication, cooldowns, pause/resume, win/loss outcomes, schema bounds, rollback, grounded lore, request/session protection, read-only authorization even with shared cookies, and state synchronization to viewer sockets. Browser QA covers generation/preview/publication, demo commands, voting, navigation, ambient sound start/stop, quiet mode, lantern contributions, kindness approval, and the breather UI. Live Twitch, Codex generation, and OBS Studio itself require configured accounts/app access and are not claimed as verified.
+Tests cover voting semantics and deadlines, event deduplication, cooldowns, pause/resume, win/loss outcomes, schema bounds, rollback, grounded lore, request/session protection, read-only authorization even with shared cookies, and state synchronization to viewer sockets. Browser QA covers generation/preview/publication, demo commands, voting, navigation, ambient sound start/stop, quiet mode, lantern contributions, kindness approval, and the breather UI. Real Twitch chat/EventSub and the Send Chat Message API have been verified on the configured broadcaster channel. A separate browser overlay displayed the approved real Twitch note. Codex generation, a second Twitch account, and OBS Studio capture itself remain unverified. The live run also found and fixed a missing New vote control after a completed vote.
 
 ## References
 
