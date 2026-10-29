@@ -10,12 +10,21 @@ export const SceneSchema = z.object({
 });
 export type Scene = z.infer<typeof SceneSchema>;
 export type SceneKind = Scene['kind'];
-export const RECIPES: { id: SceneKind; label: string; category: string; prompt: string; scene: Scene }[] = [
+export const RECIPES: { id: string; label: string; category: string; prompt: string; scene: Scene }[] = [
   { id: 'reactor', label: 'Unlucky reactor', category: 'REACTIVE WIDGET', prompt: 'A luck reactor that heats up whenever I say unlucky. Chat can shield the moon from a meteor shower.', scene: {name:'Unlucky reactor',description:'One unlucky too many. Chat, the moon is in your hands.',kind:'reactor',accent:'lime',keyword:'unlucky',duration:180,increment:10,goal:20,gravity:'normal'} },
   { id:'meteor',label:'Save the moon',category:'QUEUE-TIME GAME',prompt:'A three-minute meteor shower. Chat builds a shield together to save the moon while I am away.',scene:{name:'Save the moon',description:'You have three minutes. One moon. Absolutely no pressure.',kind:'meteor',accent:'lilac',keyword:'meteor',duration:180,increment:15,goal:25,gravity:'low'} },
   { id:'garden',label:'Little chaos garden',category:'COMMUNITY GOAL',prompt:'A cozy community garden. Every !water grows a flower. Bloom together while I take a break.',scene:{name:'Little chaos garden',description:'A little water. A little chaos. Something good grows here.',kind:'garden',accent:'cyan',keyword:'bloom',duration:180,increment:5,goal:15,gravity:'low'} },
   { id:'focus',label:'Beat the meltdown',category:'FOCUS CHALLENGE',prompt:'A focus timer that counts down for three minutes. Chat cheers with !shield while I finish my task before the reactor melts.',scene:{name:'Beat the meltdown',description:'Finish the mission before the core goes critical.',kind:'focus',accent:'amber',keyword:'panic',duration:180,increment:10,goal:20,gravity:'high'} },
 ];
+// Additional ready-to-publish presets reuse the tested community mechanics.
+RECIPES.push(...[
+ {id:'firefly',label:'Firefly meadow',category:'COZY COMMUNITY',prompt:'A cyan garden of fireflies. Say glow to brighten the meadow.',scene:{...RECIPES[2].scene,name:'Firefly meadow',description:'Gather a little light together. Chat waters the meadow.',keyword:'glow',accent:'cyan' as const,goal:12}},
+ {id:'comet',label:'Comet café',category:'QUEUE-TIME GAME',prompt:'A low gravity purple meteor scene with a two minute queue timer.',scene:{...RECIPES[1].scene,name:'Comet café',description:'Keep the cosmic café safe while the kettle warms.',duration:120,goal:12}},
+ {id:'sunrise',label:'Sunrise stretch',category:'GENTLE FOCUS',prompt:'A golden one minute focus timer for a gentle stretch.',scene:{...RECIPES[3].scene,name:'Sunrise stretch',description:'One minute to breathe, stretch, and return refreshed.',duration:60,keyword:'breathe',accent:'amber' as const,gravity:'low' as const}},
+ {id:'lucky',label:'Good luck lantern',category:'REACTIVE WIDGET',prompt:'A lilac luck reactor that fills whenever I say lucky.',scene:{...RECIPES[0].scene,name:'Good luck lantern',description:'Collect the little wins. Every lucky moment lights the room.',keyword:'lucky',increment:5,accent:'lilac' as const}},
+ {id:'bloom',label:'Midnight bloom',category:'COMMUNITY GOAL',prompt:'A purple low gravity community garden.',scene:{...RECIPES[2].scene,name:'Midnight bloom',description:'A quiet garden that grows with your community.',accent:'lilac' as const,goal:30,keyword:'grow'}},
+ {id:'sprint',label:'Tiny victory sprint',category:'FOCUS CHALLENGE',prompt:'A two minute timer to finish one small task.',scene:{...RECIPES[3].scene,name:'Tiny victory sprint',description:'Pick one small thing. Chat cheers you to the finish.',duration:120,goal:10,keyword:'done',accent:'cyan' as const}},
+]);
 export type TimelineEvent = { id: string; at: number; title: string; detail: string; type: 'scene'|'chat'|'game'|'poll'|'keyword'|'note'|'community'; source: 'demo'|'twitch'|'streamer' };
 export type ChatMessage = { id:string; at:number; user:string; text:string; source:'demo'|'twitch' };
 export type Poll = { id:string; question:string; options:string[]; counts:number[]; endsAt:number; status:'open'|'closed'; winner:number|null };

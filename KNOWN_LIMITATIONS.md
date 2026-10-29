@@ -1,8 +1,8 @@
 # First-build boundaries
 
 - This is a single-broadcaster local companion plus a static hosted browser demo, not a multi-tenant hosted Twitch service. No five-million-viewer capacity claim is made.
-- Four trusted mechanics can be remixed; the app does not generate arbitrary executable widgets. The Codex path outputs a validated scene specification.
-- Twitch integration was live-tested on the configured broadcaster account; a second independent Twitch account has not been used. Codex generation still needs its own configured account test. Connections are not inferred from the UI demo.
+- Ten scene presets share four trusted mechanics; the app does not generate arbitrary executable widgets. The Codex path outputs a validated scene specification.
+- Twitch integration was live-tested on the configured broadcaster account; a second account has verified shield and heart commands, while two-broadcaster Relay remains unverified live. Codex generation still needs its own configured account test. Connections are not inferred from the UI demo.
 - The private hosted demo is for owner review. Browser demo state syncs only within the same browser profile. Use the companion for cross-browser/OBS synchronization.
 - The local recap page cannot be reached remotely by stream viewers. The broadcaster's authenticated `!recap` response is the first remote viewer channel. A public companion or reviewed Twitch Extension needs a later hosting/auth design.
 - Event history is capped at 80 and chat at 50 messages. A recap includes up to three recorded events from the chosen time window; it is not a full stream transcript or AI inference about gameplay.
@@ -15,7 +15,7 @@
 
 ## Cozy Lounge notes
 
-- The music is an original procedural browser synthesizer with filtered noise, not generated audio files or a commercial music library. Playback depends on Web Audio and user activation. We verified the browser playback controls; OBS mixing and audible capture require a live OBS test.
+- Music includes a procedural browser synthesizer plus three original synthesized WAV loops; no commercial recordings are bundled. Playback depends on Web Audio and user activation. We verified the browser playback controls; OBS mixing and audible capture require a live OBS test.
 - Ambient effects are bounded representations of contributions, not one physics entity per viewer. Fullscreen lounge backgrounds are optional and the streamer decides when they replace the gameplay scene.
 - Break nudges are private browser-local UI reminders available while the dashboard is open. They do not infer stress, measure health, or promise to treat burnout.
 - Server restart restores an active breather as an open-ended pause, clears transient effects, and resets mood suggestion counts because identity ledgers are not persisted. Approved notes and community totals persist.

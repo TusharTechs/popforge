@@ -1,0 +1,3 @@
+PopForge original instrumental loops
+Moonlit Desk, Peach Tea, Aurora Drift
+These recordings were synthesized from original code in scripts/compose-music.mjs, without third-party recordings or samples. Permission is granted to use, copy, modify and distribute these recordings, including in monetized livestreams, VODs and edited videos, without attribution. To the extent copyright exists, this permission is irrevocable. No guarantee is made about automated platform claims.
