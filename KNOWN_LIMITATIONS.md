@@ -20,3 +20,11 @@
 - Break nudges are private browser-local UI reminders available while the dashboard is open. They do not infer stress, measure health, or promise to treat burnout.
 - Server restart restores an active breather as an open-ended pause, clears transient effects, and resets mood suggestion counts because identity ledgers are not persisted. Approved notes and community totals persist.
 - Nightshift was researched but is not integrated. No third-party service installation or payment is required for the comfort features.
+
+## Creator Relay
+
+- Relay is a two-creator, same-computer prototype. Invitation links are localhost-only and cannot reach remote collaborators; a secure hosted multi-tenant service would be required. Guest accounts must explicitly authorize their own Twitch credentials. No directory or automated matching exists.
+- Real two-broadcaster Relay OAuth and simultaneous Twitch chat have not yet been verified end to end. Relay pauses if either chat connection drops. Memory-only approvals and vote ledgers reset on process restart; reconnect and create a fresh invitation.
+- A raid handoff presents the native command for the host to execute; it does not start or verify a Twitch raid, and the Relay overlay is a separate OBS source.
+- Load rehearsals run only against the in-browser engine. They do not simulate network transport, Twitch limits, concurrent devices, or actual viewer growth.
+- Up to 100,000 votes and 200,000 event IDs are accepted per episode. Excess events are rejected rather than risking duplicate votes. A tied or empty decision has no automatic winner.

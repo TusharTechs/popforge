@@ -9,6 +9,7 @@ import {z} from 'zod';
 import {ForgeEngine,initialState,restoreState,recap} from '../shared/engine.js';
 import {generateScene} from './generator.js';
 import {TwitchBridge} from './twitch.js';
+import {installRelay} from './relay.js';
 
 const port=Number(process.env.PORT??4317);
 const origin=process.env.APP_ORIGIN??`http://localhost:${port}`;
@@ -47,6 +48,8 @@ app.use((req,res,next)=>{
   next();
 });
 const control:express.RequestHandler=(req,res,next)=>{if(!valid(cookie(req.headers.cookie)))return res.status(401).json({error:'Open the dashboard to establish a local session.'});if(req.method!=='GET'&&req.headers['x-popforge-request']!=='studio')return res.status(403).json({error:'Missing request protection header.'});next();};
+const relay=installRelay(app,control,bridge,origin);
+app.get('/api/relay/overlay',(req,res)=>{if(!equal(req.query.token,overlayToken))return res.status(403).json({error:'Overlay link expired.'});res.setHeader('Cache-Control','no-store');res.json({state:relay.publicState()});});
 app.get('/api/bootstrap',(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   const id=cookie(req.headers.cookie);
@@ -111,4 +114,4 @@ if(process.env.NODE_ENV==='production'){
   const {createServer}=await import('vite');const vite=await createServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares);
 }
 http.listen(port,'127.0.0.1',()=>console.log(`PopForge studio ready: ${origin}\nLocal broadcaster companion · Twitch ${bridge.status.configured?'configured':'not configured'} · Codex ${process.env.ENABLE_CODEX==='true'?'enabled':'disabled'}`));
-process.on('SIGTERM',()=>{bridge.disconnect();io.close();http.close();});
+process.on('SIGTERM',()=>{relay.close();bridge.disconnect();io.close();http.close();});

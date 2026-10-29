@@ -122,3 +122,11 @@ Tests cover voting semantics and deadlines, event deduplication, cooldowns, paus
 - [Twitch Extension policies](https://dev.twitch.tv/docs/extensions/guidelines-and-policies/)
 
 Built for the Codex × TwitchCon Hackathon. PopForge is an independent project, not an official Twitch or OpenAI product.
+
+### Creator Relay
+
+Open **Creator relay** in the sidebar. Rehearsal mode simulates both creator approvals and individual chat choices entirely locally. The load lab runs an isolated worker with up to 100,000 synthetic participants; its report measures only engine processing, not Twitch, network, viewership or growth.
+
+For a local live experiment, connect the host to Twitch, create an episode, and open its single-use invitation in a separate browser profile on the same computer. The guest authorizes their own Twitch account and both creators explicitly approve the introduction and active collaboration. Each channel's chat can vote with `!relay 1`, `!relay 2` or `!relay 3`: each community's distribution contributes up to 50% of the result. Each Twitch account has one choice across the episode and both broadcaster accounts are excluded. The host starts, pauses and finishes; either creator may withdraw. A handoff requires host confirmation and the broadcaster manually executes the raid in Twitch. The Relay OBS source is read-only and displays only after both approvals.
+
+The invitation expires after 30 minutes and Relay sessions, vote ledgers, and Twitch tokens are memory-only. A restart clears the episode and requires reconnecting. This is a same-computer proof of concept; localhost invitations are not remote collaboration links. Do not expose the local companion to the Internet. No discovery directory or matchmaking service is implemented.

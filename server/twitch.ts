@@ -10,6 +10,8 @@ export class TwitchBridge {
   private api?:ApiClient;
   private userId?:string;
   private lastRecap=0;
+  onChat?: (event:{userId:string;text:string;messageId:string;at:number;isBroadcaster:boolean})=>void;
+  get accountId(){return this.userId;}
   constructor(private engine:ForgeEngine,private notify:()=>void,private recapText:()=>string){}
   async connect(code:string){
     this.disconnect();
@@ -24,6 +26,7 @@ export class TwitchBridge {
     listener.onUserSocketDisconnect(()=>{this.status.listening=false;this.notify();});
     listener.onUserSocketConnect(()=>{this.status.listening=true;this.notify();});
     listener.onChannelChatMessage(id,id,event=>{
+      this.onChat?.({userId:event.chatterId,text:event.messageText,messageId:event.messageId,at:Date.now(),isBroadcaster:event.chatterId===id});
       this.engine.ingest(event.chatterId,event.messageText,'twitch',event.messageId,Date.now(),event.chatterDisplayName);
       // Keep the account ID for deduplication, display the public name in the recent chat feed.
       const last=this.engine.state.chat.at(-1);if(last?.id===event.messageId)last.user=event.chatterDisplayName;
