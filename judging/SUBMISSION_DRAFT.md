@@ -18,7 +18,7 @@ A compact browser dock puts live controls beside OBS. The visual source URL surv
 
 ## How we used Codex
 
-Codex assisted implementation, debugging, tests, and visual iteration. PopForge also uses the official Codex SDK at runtime to generate a bounded scene specification, validated against a schema and rendered by trusted Canvas code in a sandboxed iframe. It does not execute arbitrary generated widgets.
+Codex assisted implementation, debugging, tests, and visual iteration. PopForge also uses the official Codex SDK at runtime to generate a bounded scene specification, validated against a schema and rendered by trusted Canvas code. Private previews use a sandboxed iframe; the OBS source uses a direct canvas for CEF transparency compatibility. It does not execute arbitrary generated widgets.
 
 The full local runtime flow was exercised: a Codex request generated Purple Community Garden in 14.0 seconds, the private renderer became ready, and publication updated the studio stage. Runtime session: 01a18c7c-4f21-76f1-a43a-f29d7ddb22bd.
 
@@ -30,7 +30,7 @@ React, TypeScript, Vite, Express, Socket.io, Twurple OAuth/EventSub, Zod validat
 
 ## Evidence and practical limits
 
-41 automated tests pass. Real Twitch chat was previously exercised with the broadcaster and a second chatter account. Runtime Codex generation, renderer readiness, and local publication have been exercised. Actual OBS audiovisual capture and real Twitch authorization restoration after restart still need their final recorded check.
+41 automated tests pass. Real Twitch chat was previously exercised with the broadcaster and a second chatter account. Runtime Codex generation, renderer readiness, and local publication have been exercised. Real Twitch authorization restored after restart. A separate account’s !heart reached EventSub and OBS displayed the updated heart total. A 35.43-second OBS rehearsal captures the garden-to-lounge change at 720p30 with non-silent stereo AAC audio. The music signal is quiet and final listening balance remains to be checked. The transient heart animation was not captured; no chat event was replayed. Twitch broadcasting stayed off.
 
 The hosted owner-private Site is a static browser preview; the complete Twitch experience runs through the local companion. Relay is a same-computer two-creator prototype and has not been verified live with two broadcasters. No public viewer service, released Twitch Extension, measured retention improvement, or independent creator pilot is claimed.
 

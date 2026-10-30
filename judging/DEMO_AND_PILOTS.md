@@ -35,13 +35,9 @@ Record observed results separately from impressions. Suggested fields: anonymous
 
 No pilots have been claimed by this document. No measured retention or growth claim should appear without evidence.
 
-## Runtime generation attempt
-
-The existing Codex CLI reported a ChatGPT login. A real SDK request was attempted. The service rejected the configured `gpt-6.1-sol` model with `model_not_found`, stating it is unsupported for Codex with this ChatGPT account. No successful runtime generation is claimed. Configure `CODEX_MODEL` with a model available to this account, then repeat generation, private preview, and publication before including that feature in the demo.
-
 ## Codex CLI compatibility verification
 
-The SDK’s bundled CLI (0.149.1) rejected the configured model. Using the installed Codex CLI (0.165.0-alpha.1.2) succeeded with the existing ChatGPT login and unchanged model selection. PopForge now prefers an executable on PATH, supports an explicit CODEX_CLI_PATH override, and falls back to the SDK bundle if neither is available. Generation returned a validated Purple Bloom Garden specification and session 01a18c78-fd71-79c1-8298-2b5b49655a7b. This supersedes earlier notes describing all runtime generation as unverified or blocked. Actual OBS capture and a complete on-stream demonstration remain separate checks.
+The SDK’s bundled CLI (0.149.1) rejected the configured model. Using the installed Codex CLI (0.165.0-alpha.1.2) succeeded with the existing ChatGPT login and unchanged model selection. PopForge now prefers an executable on PATH, supports an explicit CODEX_CLI_PATH override, and falls back to the SDK bundle if neither is available. Generation returned a validated Purple Bloom Garden specification and session 01a18c78-fd71-79c1-8298-2b5b49655a7b. This supersedes earlier notes describing all runtime generation as unverified or blocked. The complete submitted demonstration remains a separate deliverable.
 
 The full local app workflow was subsequently exercised: Codex generated Purple Community Garden in 14.0 seconds, the private renderer reported ready, and Publish updated the studio stage. Session: 01a18c7c-4f21-76f1-a43a-f29d7ddb22bd. Screenshot evidence is saved outside the source checkout. This verifies local generation, preview, and publication; Twitch and OBS capture were not part of this run.
 
@@ -49,4 +45,12 @@ The full local app workflow was subsequently exercised: Codex generated Purple C
 
 OBS Studio 33.0.0 was installed on the Apple Silicon Mac through Homebrew’s OBS cask. Browser visual source is 1920 × 1080. A separate audio browser source is routed through OBS and placed at X=2000 outside the canvas. Its soundscape was explicitly enabled in OBS Interact; the OBS mixer displayed a nonzero signal. Microphone is muted. PopForge controls were added through Custom Browser Docks and displayed the connected broadcaster.
 
-The broadcaster techtushstreams restored automatically and resumed listening after a real companion restart. The initial OBS overlay exposed a white iframe background; the broadcast route now uses the same trusted renderer directly on a canvas, while private scene previews retain their sandboxed iframe. The white background disappeared in the OBS preview. Actual recorded audiovisual output and live chatter contributions during this OBS run remain pending. No stream or recording was started during setup.
+The broadcaster techtushstreams restored automatically and resumed listening after a real companion restart. The initial OBS overlay exposed a white iframe background; the broadcast route now uses the same trusted renderer directly on a canvas, while private scene previews retain their sandboxed iframe. The white background disappeared in the OBS preview. A second account subsequently sent !heart; EventSub received it and the OBS lounge showed the updated total of three hearts. The transient burst was not captured or replayed. No stream or recording was started during initial setup.
+
+## Recorded rehearsal — 30 October 2026
+
+OBS saved a 35.43-second local rehearsal, H.264 1280 × 720 at 30 fps with 48 kHz stereo AAC. Visually inspected frames at 5 and 25 seconds show Purple Community Garden and the lounge scene change. The 1920 × 1080 browser canvas is downscaled by the current OBS output settings.
+
+Audio analysis: mean −47.9 dB, peak −33.9 dB. This verifies a non-silent signal, not perceptual listening quality; check the quiet music against narration before final submission. OBS finalized the file successfully. Broadcasting remained off, microphone was muted, and no new Twitch command was captured in this rehearsal.
+
+Evidence assets are kept outside the source checkout: popforge-obs-rehearsal.mp4, popforge-recording-verification.json, popforge-recording-frame-start.png, and popforge-recording-frame-lounge.png. The MP4 is remuxed without re-encoding from the original OBS MOV. These are local evidence assets, not a public YouTube submission. Record the remaining real garden contributions, recap, Codex development segment, and narration before assembling the final under-three-minute video.

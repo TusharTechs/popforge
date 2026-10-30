@@ -2,7 +2,7 @@
 
 - This is a single-broadcaster local companion plus a static hosted browser demo, not a multi-tenant hosted Twitch service. No five-million-viewer capacity claim is made.
 - Ten scene presets share four trusted mechanics; the app does not generate arbitrary executable widgets. The Codex path outputs a validated scene specification.
-- Twitch integration was live-tested on the configured broadcaster account; a second account has verified shield and heart commands, while two-broadcaster Relay remains unverified live. Codex generation still needs its own configured account test. Connections are not inferred from the UI demo.
+- Twitch integration was live-tested on the configured broadcaster account; a second account has verified shield and heart commands, while two-broadcaster Relay remains unverified live. Runtime Codex generation, preview, and publication have also passed a configured account test. Connections are not inferred from the UI demo.
 - The private hosted demo is for owner review. Browser demo state syncs only within the same browser profile. Use the companion for cross-browser/OBS synchronization.
 - The local recap page cannot be reached remotely by stream viewers. The broadcaster's authenticated `!recap` response is the first remote viewer channel. A public companion or reviewed Twitch Extension needs a later hosting/auth design.
 - Event history is capped at 80 and chat at 50 messages. A recap includes up to three recorded events from the chosen time window; it is not a full stream transcript or AI inference about gameplay.
@@ -15,7 +15,7 @@
 
 ## Cozy Lounge notes
 
-- Music includes a procedural browser synthesizer plus three original synthesized WAV loops; no commercial recordings are bundled. Playback depends on Web Audio and user activation. We verified the browser playback controls; OBS mixing and audible capture require a live OBS test.
+- Music includes a procedural browser synthesizer plus three original synthesized WAV loops; no commercial recordings are bundled. Playback depends on Web Audio and user activation. OBS routing and a non-silent stereo recording have been verified. The rehearsal mix measured −47.9 dB mean and −33.9 dB peak; it is quiet, and final perceptual listening and voice balance remain a demo check.
 - Ambient effects are bounded representations of contributions, not one physics entity per viewer. Fullscreen lounge backgrounds are optional and the streamer decides when they replace the gameplay scene.
 - Break nudges are private browser-local UI reminders available while the dashboard is open. They do not infer stress, measure health, or promise to treat burnout.
 - Server restart restores an active breather as an open-ended pause, clears transient effects, and resets mood suggestion counts because identity ledgers are not persisted. Approved notes and community totals persist.
@@ -31,22 +31,24 @@
 
 ## Returning to the studio
 
-- The host Twitch authorization now persists locally in encrypted, owner-only identity files. The key is stored alongside it in a separate owner-only file; this is not an OS keychain and does not protect against someone who controls the same OS account. Startup and refresh persistence are covered with a mocked Twitch runtime; the real Twitch restart flow still needs the next broadcaster sign-in.
+- The host Twitch authorization now persists locally in encrypted, owner-only identity files. The key is stored alongside it in a separate owner-only file; this is not an OS keychain and does not protect against someone who controls the same OS account. Startup and refresh persistence are covered with a mocked Twitch runtime; real host authorization restoration and EventSub listening after restart have also passed.
 - Disconnect forgets saved host credentials locally. Revoking consent in Twitch itself remains a separate user action. Token invalidation or changes to the configured application can require consent again.
 - Source URLs now survive restarts. Links from an older memory-only version must be replaced once. Replacing source links intentionally invalidates the old URLs and disconnects existing reader sockets.
-- A visual source reported as connected can be a preview browser tab. OBS capture, broadcast visibility, and audible routing still need checking inside OBS.
-- Compact controls are a local `/dock` page intended for an OBS Custom Browser Dock. Actual OBS installation and dock testing remain outstanding; browser controls have been exercised.
+- A visual source reported as connected can be a preview browser tab. Actual OBS visual and audio recording have passed locally; public broadcast visibility has not been tested.
+- Compact controls are a local `/dock` page intended for an OBS Custom Browser Dock. OBS Studio 33.0.0 installation and this custom dock have been exercised.
 - Gentle moments lower the goal to five contributions; they do not infer audience size, adapt difficulty automatically, or identify silent viewers.
 - The onboarding and live-control work does not include a public SaaS backend, a café simulation, external creator pilots, moderator accounts, or remote Relay hosting.
 
 ## Community memory update
 
-The lasting garden now implements one persistent community creation: live garden contributions and up to 24 flower colors survive snapshots and fresh sessions. Browser rehearsal has a separate garden. This is not the proposed café simulation or a hosted multi-streamer world. The previous note listing persistent world mechanics as entirely absent is superseded by this limited garden implementation. Actual OBS capture, real OAuth restart verification, remote Relay, independent pilots, and public service hosting remain outstanding until separately exercised.
+The lasting garden stores live contributions and up to 24 flower colors across snapshots and fresh sessions. Browser rehearsal has a separate garden. Remote Relay, independent pilots, and a public service remain future work.
 
-A real runtime SDK request was attempted with the existing ChatGPT login. It failed because the configured gpt-6.1-sol model was rejected for that account. Recipe generation remains working. Configure an available CODEX_MODEL before recording runtime generation as successful.
+## Verified runtime and OBS evidence — 30 October 2026
 
-## Codex CLI compatibility verification
+The SDK bundle initially rejected the configured model. The installed Codex CLI succeeded with the existing ChatGPT login and unchanged model selection. PopForge prefers an executable on PATH, supports CODEX_CLI_PATH, and otherwise falls back to the SDK bundle. Purple Community Garden was generated in 14.0 seconds, previewed, and published locally (session 01a18c7c-4f21-76f1-a43a-f29d7ddb22bd).
 
-The SDK’s bundled CLI (0.149.1) rejected the configured model. Using the installed Codex CLI (0.165.0-alpha.1.2) succeeded with the existing ChatGPT login and unchanged model selection. PopForge now prefers an executable on PATH, supports an explicit CODEX_CLI_PATH override, and falls back to the SDK bundle if neither is available. Generation returned a validated Purple Bloom Garden specification and session 01a18c78-fd71-79c1-8298-2b5b49655a7b. This supersedes earlier notes describing all runtime generation as unverified or blocked. Actual OBS capture and a complete on-stream demonstration remain separate checks.
+Real host OAuth restoration, a second account's !heart event, OBS source rendering, audio routing, and the control dock passed. The heart event updated the stored total and OBS showed three hearts; its transient particle burst was not captured and was not replayed.
 
-OBS setup has now been exercised in OBS Studio 33.0.0: browser visual source, separate audio source, playing soundscape with OBS mixer signal, and custom control dock. Real host OAuth restoration after restart passed. Actual recorded output is still unverified. The broadcast route renders trusted scene data directly to canvas for CEF alpha compatibility; generated executable code is never loaded. Private previews continue to use the sandboxed iframe.
+An actual 35.43-second OBS rehearsal was saved as H.264 1280 × 720 at 30 fps with 48 kHz stereo AAC. Extracted frames show the garden and the lounge scene change. Audio analysis confirms a non-silent, quiet signal; perceptual listening quality has not been verified. No live chat event was sent during this recording. Twitch broadcasting remained off. This is a rehearsal asset, not the complete submission video.
+
+The broadcast route renders trusted scene data directly to canvas for CEF alpha compatibility; generated executable code is never loaded. Private previews continue to use a sandboxed iframe.
