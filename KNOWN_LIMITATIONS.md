@@ -11,7 +11,7 @@
 - Round and poll snapshots persist, but in-memory anti-duplication ledgers do not survive a companion restart. The companion returns restored active rounds to standby and closes restored open polls to prevent continuing with incomplete ledgers. In a browser-only demo, reloading also returns a fresh local ledger; an open round continues from its persisted progress. This demo does not provide adversarial vote integrity.
 - Simple particle physics illustrates the scene. Chat actions and time determine the outcome, not vision detection or particle hits.
 - Feature icons use Lucide; scene illustrations are original code-generated canvas/CSS artwork. Google Fonts is optional; system fonts remain usable offline.
-- Do not expose the local Node service to the public Internet without adding durable broadcaster identity, tenant isolation, HTTPS, persisted encrypted token storage, and public viewer transport.
+- Do not expose the local Node service to the public Internet without adding durable broadcaster identity, tenant isolation, HTTPS, production secret management, and public viewer transport. Local encrypted credential persistence does not turn this into a multi-tenant service.
 
 ## Cozy Lounge notes
 
@@ -28,3 +28,13 @@
 - A raid handoff presents the native command for the host to execute; it does not start or verify a Twitch raid, and the Relay overlay is a separate OBS source.
 - Load rehearsals run only against the in-browser engine. They do not simulate network transport, Twitch limits, concurrent devices, or actual viewer growth.
 - Up to 100,000 votes and 200,000 event IDs are accepted per episode. Excess events are rejected rather than risking duplicate votes. A tied or empty decision has no automatic winner.
+
+## Returning to the studio
+
+- The host Twitch authorization now persists locally in encrypted, owner-only identity files. The key is stored alongside it in a separate owner-only file; this is not an OS keychain and does not protect against someone who controls the same OS account. Startup and refresh persistence are covered with a mocked Twitch runtime; the real Twitch restart flow still needs the next broadcaster sign-in.
+- Disconnect forgets saved host credentials locally. Revoking consent in Twitch itself remains a separate user action. Token invalidation or changes to the configured application can require consent again.
+- Source URLs now survive restarts. Links from an older memory-only version must be replaced once. Replacing source links intentionally invalidates the old URLs and disconnects existing reader sockets.
+- A visual source reported as connected can be a preview browser tab. OBS capture, broadcast visibility, and audible routing still need checking inside OBS.
+- Compact controls are a local `/dock` page intended for an OBS Custom Browser Dock. Actual OBS installation and dock testing remain outstanding; browser controls have been exercised.
+- Gentle moments lower the goal to five contributions; they do not infer audience size, adapt difficulty automatically, or identify silent viewers.
+- The onboarding and live-control work does not include a public SaaS backend, a persistent community-world mechanic, external creator pilots, moderator accounts, or remote Relay hosting.

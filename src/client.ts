@@ -3,12 +3,12 @@ import { ForgeEngine, initialState, restoreState, remix, type Command, type Forg
 import type { TwitchStatus } from '../server/twitch';
 
 const KEY='popforge.studio.v1';
-type Connection={mode:'starting'|'server'|'browser'|'offline';twitch:TwitchStatus;codex:boolean;overlayToken:string;error:string|null};
+export type Connection={mode:'starting'|'server'|'browser'|'offline';twitch:TwitchStatus;codex:boolean;overlayToken:string;error:string|null;sources:{visual:number;audio:number}};
 const emptyTwitch:TwitchStatus={configured:false,connected:false,listening:false,name:null,category:null,error:null};
 let localState=initialState();try{localState=restoreState(JSON.parse(localStorage.getItem(KEY)??'null'));}catch{}
 let engine=new ForgeEngine(localState);
 let state:ForgeState=engine.state;
-let connection:Connection={mode:'starting',twitch:emptyTwitch,codex:false,overlayToken:'',error:null};
+let connection:Connection={mode:'starting',twitch:emptyTwitch,codex:false,overlayToken:'',error:null,sources:{visual:0,audio:0}};
 let socket:Socket|undefined;
 let channel:BroadcastChannel|undefined;
 const stateListeners=new Set<()=>void>();const connectionListeners=new Set<()=>void>();
@@ -31,15 +31,34 @@ export const client={
       const data=await response.json();
       if(!response.ok){updateConnection({mode:'offline',error:data.error??'Cannot open this source.'});return;}
       state=restoreState(data.state);notifyState();
-      updateConnection({mode:'server',twitch:data.twitch,codex:!!data.codex,overlayToken:data.overlayToken??token??''});
-      socket=io({auth:viewer?{token,viewer:true}:{},reconnection:true});
+      updateConnection({mode:'server',twitch:data.twitch,codex:!!data.codex,overlayToken:data.overlayToken??token??'',sources:data.sources??{visual:0,audio:0}});
+      socket=io({auth:viewer?{token,viewer:true,surface:location.pathname.slice(1)}:{},reconnection:true});
       socket.on('state',(s:ForgeState)=>{state=restoreState(s);notifyState();});
       socket.on('twitch',(t:TwitchStatus)=>updateConnection({twitch:t}));
-      socket.on('disconnect',()=>updateConnection({mode:'offline',error:'The local companion disconnected. Reconnecting…'}));
+      socket.on('sources',(sources:Connection['sources'])=>updateConnection({sources}));
+      socket.on('overlayToken',(overlayToken:string)=>updateConnection({overlayToken}));
+      socket.on('disconnect',(reason)=>updateConnection({mode:'offline',sources:{visual:0,audio:0},error:reason==='io server disconnect'?'This source link was replaced. Copy the new link from PopForge.':'The local companion disconnected. Reconnecting…'}));
       socket.on('connect',()=>updateConnection({mode:'server',error:null}));
-      socket.on('connect_error',()=>updateConnection({mode:'offline',error:'Cannot reach the local companion. Check that it is running.'}));
-    }catch{
-      if(token){updateConnection({mode:'offline',error:'Cannot reach this overlay session. Open the local companion and copy a fresh URL.'});return;}
+      let renewing=false;
+      socket.on('connect_error',async()=>{
+        updateConnection({mode:'offline',error:'Cannot reach the local companion. Reconnecting…'});
+        if(viewer||renewing)return;
+        renewing=true;
+        // A restart invalidates local control sessions, but not the OBS link.
+        // Bootstrap a new HttpOnly session before retrying the control socket.
+        try{
+          const r=await fetch('/api/bootstrap',{signal:AbortSignal.timeout(4000)});
+          if(!r.ok)throw new Error('Session unavailable');const data=await r.json();
+          updateConnection({twitch:data.twitch,overlayToken:data.overlayToken,codex:!!data.codex,sources:data.sources??{visual:0,audio:0}});
+          socket?.connect();
+        }catch{}finally{setTimeout(()=>{renewing=false;if(!socket?.connected)socket?.connect();},2000);}
+      });
+    }catch(error){
+      const staticPreview=error instanceof Error&&error.message==='STATIC_DEMO';
+      if(token||(['localhost','127.0.0.1'].includes(location.hostname)&&!staticPreview)){
+        updateConnection({mode:'offline',error:'Waiting for the local companion. Your saved source link will reconnect when it starts.'});
+        setTimeout(()=>{initialized=false;void client.init(viewer);},3000);return;
+      }
       updateConnection({mode:'browser'});
       if('BroadcastChannel'in window){channel=new BroadcastChannel('popforge-studio');channel.onmessage=e=>{state=restoreState(e.data);engine.state=state;notifyState();};}
       window.addEventListener('storage',e=>{if(e.key===KEY)syncFromStorage();});
@@ -68,7 +87,9 @@ export const client={
     return {scene:remix(prompt),provider:'recipe',checks:['Scene schema valid','Trusted renderer compatible','No executable code or external assets']};
   },
   async disconnectTwitch(){
-    const response=await fetch('/api/twitch/disconnect',{method:'POST',headers:{'X-Popforge-Request':'studio'}});if(!response.ok)throw new Error('Could not disconnect Twitch.');
+    const response=await fetch('/api/twitch/disconnect',{method:'POST',headers:{'X-Popforge-Request':'studio'}});if(!response.ok)throw new Error('Could not forget the Twitch connection. Check disk access and try again.');
   },
-  url(route:string){const u=new URL(route,location.origin);if(connection.mode==='server'&&connection.overlayToken)u.searchParams.set('token',connection.overlayToken);return u.toString();},
+  async retryTwitch(){const r=await fetch('/api/twitch/retry',{method:'POST',headers:{'X-Popforge-Request':'studio'}});if(!r.ok)throw new Error('Could not retry Twitch.');updateConnection({twitch:(await r.json()).twitch});},
+  async rotateOverlay(){const r=await fetch('/api/overlay/rotate',{method:'POST',headers:{'X-Popforge-Request':'studio'}});if(!r.ok)throw new Error('Could not replace source links.');},
+  url(route:string){const u=new URL(route,location.origin);if(connection.overlayToken)u.searchParams.set('token',connection.overlayToken);return u.toString();},
 };

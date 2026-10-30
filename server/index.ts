@@ -10,6 +10,7 @@ import {ForgeEngine,initialState,restoreState,recap} from '../shared/engine.js';
 import {generateScene} from './generator.js';
 import {TwitchBridge} from './twitch.js';
 import {installRelay} from './relay.js';
+import {LocalIdentity} from './local-identity.js';
 
 const port=Number(process.env.PORT??4317);
 const origin=process.env.APP_ORIGIN??`http://localhost:${port}`;
@@ -17,8 +18,11 @@ process.env.TWITCH_REDIRECT_URI??=`${origin}/auth/twitch/callback`;
 const allowedOrigins=new Set([origin,`http://127.0.0.1:${port}`]);
 const app=express();const http=createServer(app);
 const token=()=>randomBytes(32).toString('hex');
-const overlayToken=token();const sessions=new Map<string,number>();const oauth=new Map<string,{session:string,expires:number}>();
-const stateFile=path.resolve(process.env.POPFORGE_DATA_DIR??'.data','state.json');
+const dataDirectory=path.resolve(process.env.POPFORGE_DATA_DIR??'.data');
+const identity=new LocalIdentity(dataDirectory);
+let overlayToken=identity.overlayToken;
+const sessions=new Map<string,number>();const oauth=new Map<string,{session:string,expires:number}>();
+const stateFile=path.join(dataDirectory,'state.json');
 let saved=initialState();try{saved=restoreState(JSON.parse(await readFile(stateFile,'utf8')));}catch{}
 // Private vote/cooldown ledgers are intentionally not persisted. Never resume a live
 // round or vote with an incomplete ledger after a process restart.
@@ -38,7 +42,9 @@ const viewerSnapshot=()=>{const s=snapshot();s.lounge.pending=[];s.proposals=[];
 let broadcastTimer:ReturnType<typeof setTimeout>|undefined;
 let dirty=false;
 function notify(){dirty=true;if(!broadcastTimer)broadcastTimer=setTimeout(()=>{io.to('control').emit('state',snapshot());io.to('viewer').emit('state',viewerSnapshot());io.emit('twitch',bridge.status);broadcastTimer=undefined;},100);}
-const bridge=new TwitchBridge(engine,notify,()=>{const r=recap(engine.state);return `${r.moments.map(m=>m.title).join(' · ')||'A new chapter is starting.'} ${r.action}`;});
+const bridge=new TwitchBridge(engine,notify,()=>{const r=recap(engine.state);return `${r.moments.map(m=>m.title).join(' · ')||'A new chapter is starting.'} ${r.action}`;},identity);
+const sources=()=>({visual:[...io.sockets.sockets.values()].filter(s=>s.data.role==='viewer'&&s.data.surface==='overlay').length,audio:[...io.sockets.sockets.values()].filter(s=>s.data.role==='viewer'&&s.data.surface==='sound').length});
+const notifySources=()=>io.to('control').emit('sources',sources());
 
 app.use(express.json({limit:'16kb'}));
 app.use((req,res,next)=>{
@@ -54,7 +60,7 @@ app.get('/api/bootstrap',(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   const id=cookie(req.headers.cookie);
   if(!valid(id)){const s=token();sessions.set(s,Date.now()+24*60*60*1000);res.cookie('popforge_session',s,{httpOnly:true,sameSite:'lax',secure:origin.startsWith('https:'),maxAge:24*60*60*1000});}
-  res.json({backend:true,state:snapshot(),overlayToken,twitch:bridge.status,codex:process.env.ENABLE_CODEX==='true'});
+  res.json({backend:true,state:snapshot(),overlayToken,twitch:bridge.status,sources:sources(),codex:process.env.ENABLE_CODEX==='true'});
 });
 app.get('/api/view',(req,res)=>{
   if(!equal(req.query.token,overlayToken))return res.status(403).json({error:'This overlay link expired. Copy a new link from the studio.'});
@@ -78,7 +84,15 @@ app.get('/auth/twitch/callback',async(req,res)=>{
   try{const code=z.string().min(5).max(300).parse(req.query.code);await bridge.connect(code);res.redirect('/?twitch=connected');}
   catch{res.redirect('/?twitch=error');}
 });
-app.post('/api/twitch/disconnect',control,(_req,res)=>{bridge.disconnect();res.json({ok:true});});
+app.post('/api/twitch/disconnect',control,(_req,res)=>{try{bridge.disconnect();res.json({ok:true});}catch{res.status(500).json({error:'Could not forget the saved connection. Check disk access and try again.'});}});
+app.post('/api/twitch/retry',control,async(_req,res)=>{await bridge.restore();res.json({twitch:bridge.status});});
+app.post('/api/overlay/rotate',control,(_req,res)=>{
+  try{
+    overlayToken=identity.rotateOverlay();
+    for(const socket of io.sockets.sockets.values())if(socket.data.role==='viewer')socket.disconnect(true);
+    io.to('control').emit('overlayToken',overlayToken);notifySources();res.json({ok:true});
+  }catch{res.status(500).json({error:'Could not replace the source links. Check disk access.'});}
+});
 io.use((socket,next)=>{
   if(socket.handshake.auth.viewer){
     if(equal(socket.handshake.auth.token,overlayToken)){socket.data.role='viewer';return next();}
@@ -89,8 +103,11 @@ io.use((socket,next)=>{
   next(new Error('Session expired. Reload PopForge.'));
 });
 io.on('connection',socket=>{
+  socket.data.surface=['overlay','sound','recap'].includes(socket.handshake.auth.surface)?socket.handshake.auth.surface:'unknown';
   void socket.join(socket.data.role==='control'?'control':'viewer');
   socket.emit('state',socket.data.role==='control'?snapshot():viewerSnapshot());socket.emit('twitch',bridge.status);
+  if(socket.data.role==='control')socket.emit('sources',sources());
+  notifySources();socket.on('disconnect',notifySources);
   let lastCommand=0;
   socket.on('command',(command,ack)=>{
     if(typeof ack!=='function')return;
@@ -106,12 +123,15 @@ io.on('connection',socket=>{
   });
 });
 setInterval(()=>{if(engine.tick())notify();for(const [key,expiry]of sessions)if(expiry<Date.now())sessions.delete(key);for(const[key,pending]of oauth)if(pending.expires<Date.now())oauth.delete(key);},250).unref();
-// Write snapshots atomically and serially. OAuth credentials are kept only in server memory.
+// Public state is separate from the encrypted local identity and Twitch credentials.
 setInterval(async()=>{if(!dirty)return;dirty=false;try{await mkdir(path.dirname(stateFile),{recursive:true});await writeFile(stateFile+'.tmp',JSON.stringify(snapshot()));await rename(stateFile+'.tmp',stateFile);}catch{dirty=true;}},2000).unref();
+let closeDevelopmentServer:(()=>Promise<void>)|undefined;
 if(process.env.NODE_ENV==='production'){
   app.use(express.static(path.resolve('dist')));app.get('/{*splat}',(_req,res)=>res.sendFile(path.resolve('dist/index.html')));
 }else{
-  const {createServer}=await import('vite');const vite=await createServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares);
+  const {createServer}=await import('vite');const vite=await createServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares);closeDevelopmentServer=()=>vite.close();
 }
-http.listen(port,'127.0.0.1',()=>console.log(`PopForge studio ready: ${origin}\nLocal broadcaster companion · Twitch ${bridge.status.configured?'configured':'not configured'} · Codex ${process.env.ENABLE_CODEX==='true'?'enabled':'disabled'}`));
-process.on('SIGTERM',()=>{relay.close();bridge.disconnect();io.close();http.close();});
+http.listen(port,'127.0.0.1',()=>{console.log(`PopForge studio ready: ${origin}\nLocal broadcaster companion · Twitch ${bridge.status.configured?'configured':'not configured'} · Codex ${process.env.ENABLE_CODEX==='true'?'enabled':'disabled'}`);void bridge.restore();});
+let shuttingDown=false;
+async function shutdown(){if(shuttingDown)return;shuttingDown=true;relay.close();bridge.stop();await closeDevelopmentServer?.();io.close();http.close();}
+process.once('SIGTERM',()=>void shutdown());process.once('SIGINT',()=>void shutdown());

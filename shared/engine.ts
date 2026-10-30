@@ -31,6 +31,8 @@ export type Poll = { id:string; question:string; options:string[]; counts:number
 export type Round = { id:string; status:'idle'|'playing'|'paused'|'ended'; deadline:number; remaining:number; shields:number; actions:number; participants:number; outcome:'saved'|'lost'|null };
 export type ForgeState = { version:1; revision:number; scene:Scene; previous:Scene[]; charge:number; round:Round; poll:Poll|null; events:TimelineEvent[]; chat:ChatMessage[]; proposals:{id:string;user:string;text:string}[]; stats:{scenes:number;rounds:number;actions:number}; settings:{reducedMotion:boolean;compact:boolean}; lounge:LoungeState; };
 export const CommandSchema = z.discriminatedUnion('type', [
+  z.object({type:z.literal('startMoment'),scene:SceneSchema}),
+  z.object({type:z.literal('endActivity')}),
   z.object({type:z.literal('publish'),scene:SceneSchema}), z.object({type:z.literal('rollback')}),
   z.object({type:z.literal('start')}), z.object({type:z.literal('pause')}),z.object({type:z.literal('resume')}),z.object({type:z.literal('finish')}),
   z.object({type:z.literal('stop')}), z.object({type:z.literal('keyword')}),z.object({type:z.literal('resetCharge')}),
@@ -93,7 +95,16 @@ export class ForgeEngine {
   private changed(){this.state={...this.state,revision:this.state.revision+1};return this.state;}
   dispatch(input:unknown,now=Date.now()): ForgeState {
     const c=CommandSchema.parse(input);const s=this.state;
-    if(c.type==='publish') {
+    if(c.type==='startMoment'){
+      if(s.lounge.break.status!=='idle'||s.round.status==='playing'||s.round.status==='paused')throw new Error('End the current activity before starting another moment.');
+      this.dispatch({type:'publish',scene:c.scene},now);
+      // A playable moment must remain visible after leaving a full-screen lounge.
+      this.state.settings.compact=false;this.state.lounge.showBackground=false;
+      return this.dispatch({type:'start'},now);
+    } else if(c.type==='endActivity'){
+      if(s.lounge.break.status!=='idle')this.dispatch({type:'returnFromBreak'},now);
+      return this.dispatch({type:'stop'},now);
+    } else if(c.type==='publish') {
       s.previous=[...s.previous,s.scene].slice(-3);s.scene={...c.scene};s.round=idle(c.scene.duration);s.charge=0;s.stats.scenes++;
       this.participants.clear();this.cooldown.clear();this.record('scene',`${c.scene.name} went live`,c.scene.description,'streamer',now);
     } else if(c.type==='rollback') {
