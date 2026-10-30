@@ -1,7 +1,7 @@
 // Only this trusted renderer runs in the sandbox. Scene specs contain data, never code.
-function renderScene(){
-  const canvas=document.querySelector('canvas')!;const ctx=canvas.getContext('2d')!;
-  let data:any=null;let width=960,height=540;let t=0;let last=performance.now();let stopped=false;
+export function renderScene(canvasOverride?:HTMLCanvasElement){
+  const canvas=canvasOverride??document.querySelector('canvas')!;const ctx=canvas.getContext('2d')!;
+  let disposed=false;let data:any=null;let width=960,height=540;let t=0;let last=performance.now();let stopped=false;
   const bodies=Array.from({length:12},(_,i)=>({x:100+(i*71)%790,y:-30-i*55,vx:-12-i*2,vy:25+(i%4)*9,r:4+i%4}));
   let impact=0;
   const colors:Record<string,string>={lime:'#e4ff8c',lilac:'#bda7ff',amber:'#ffad70',cyan:'#8ce5de'};
@@ -83,6 +83,7 @@ function renderScene(){
     }
   }
   function frame(now:number){
+    if(disposed)return;
     const dt=Math.min((now-last)/1000,.05);last=now;
     if(!data){requestAnimationFrame(frame);return;}
     const {scene,charge,round,settings}=data;
@@ -170,11 +171,12 @@ function renderScene(){
     }
     reactionBursts();ctx.textAlign='left';ctx.restore();requestAnimationFrame(frame);
   }
-  addEventListener('message',e=>{
+  if(!canvasOverride)addEventListener('message',e=>{
     if(e.source!==parent)return;
     if(e.data?.type==='popforge:state'&&e.data.payload?.scene){data=e.data.payload;stopped=!!data.previewPaused;}
   });
-  let lastTap=0;addEventListener('click',()=>{if(performance.now()-lastTap<500)return;lastTap=performance.now();parent.postMessage({type:'popforge:tap'},'*');});
-  parent.postMessage({type:'popforge:ready'},'*');requestAnimationFrame(frame);
+  let lastTap=0;if(!canvasOverride)addEventListener('click',()=>{if(performance.now()-lastTap<500)return;lastTap=performance.now();parent.postMessage({type:'popforge:tap'},'*');});
+  if(!canvasOverride)parent.postMessage({type:'popforge:ready'},'*');requestAnimationFrame(frame);
+  return {update:(next:any)=>{data=next;stopped=!!next.previewPaused;},dispose:()=>{disposed=true;removeEventListener('resize',resize);}};
 }
 export const RENDERER_DOCUMENT=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; frame-src 'none'"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}canvas{display:block;width:100%;height:100%}</style></head><body><canvas aria-label="Animated community scene"></canvas><script>(${renderScene.toString()})()</script></body></html>`;

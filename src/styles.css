@@ -18,3 +18,4 @@ html:has(.overlay-root),body:has(.overlay-root){background:transparent!important
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 .poll-result-actions{display:flex;align-items:center;gap:11px}.poll-result-actions>button{display:flex;align-items:center;gap:4px;font-size:8px;color:#cee4aa;background:transparent;padding:0}.poll-result-actions>button:last-child{color:#9eb489}.poll-result-actions>button:hover{color:#e3fa98}@media(max-width:640px){.poll-result-actions{gap:7px}.poll-result-actions>button{font-size:6px;gap:3px}.poll-result-actions>button>svg{width:10px}}
+.compact-overlay>.broadcast-canvas{display:none}
