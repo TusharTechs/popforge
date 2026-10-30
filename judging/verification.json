@@ -1,0 +1,44 @@
+{
+  "review_date": "2026-10-30",
+  "runtime_source_baseline": "3931270409a1604ada432d851154d14fe80500c3",
+  "runtime_code_changed_by_documentation_review": false,
+  "tests": {
+    "passed": 41,
+    "failed": 0,
+    "skipped": 0
+  },
+  "production_build": "passed",
+  "clean_archive": {
+    "install": "passed",
+    "build": "passed",
+    "tests": "41 passed",
+    "private_env_or_runtime_data_copied": false
+  },
+  "dependency_audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "remaining_build_warning": "Main minified JavaScript chunk approximately 541 KB",
+  "screenshots": [
+    {
+      "path": "docs/assets/community-garden.png",
+      "sha256": "a0b0b046c20a9168d038f32622854007c2b3fc7532f5dc6dd31705c05a103463",
+      "source": "frame extracted from actual OBS rehearsal"
+    },
+    {
+      "path": "docs/assets/cozy-lounge.png",
+      "sha256": "892494a9aecb68646d7cae3c81e175a4a39c7ac7826fa60e7be59b077f5b3ba1",
+      "source": "frame extracted from actual OBS rehearsal"
+    }
+  ],
+  "limits": [
+    "Self-recorded evidence, not independent third-party verification",
+    "No retention or viewer-capacity measurement",
+    "Final YouTube video and actual Devpost submission pending",
+    "Private repository access is owner-managed"
+  ]
+}

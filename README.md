@@ -2,19 +2,66 @@
 
 **Your chat imagines it. Your stream plays it.**
 
-A working first vertical slice of a Twitch community co-creation studio. A streamer describes a scene, previews a validated remix, publishes to a persistent OBS browser source, lets chat play a short cooperative game, and shares a catch-up card grounded in the actual event log.
+Turn a creator’s queue or coffee break into a shared community moment: a playable scene, a lasting garden, and a welcoming room. Viewers stay in Twitch chat. The creator stays in OBS.
 
-## Run the complete local companion
+| Important link | What you’ll find |
+| --- | --- |
+| [GitHub repository](https://github.com/TusharTechs/popforge) | Complete source, original assets, tests, and setup instructions; currently private |
+| [Hosted studio preview](https://popforge-studio.tusharaggarwal274.chatgpt.site/) | Owner-private, browser-only preview; live Twitch/OBS uses the local companion |
+| [Quick start](#quick-start) · [Live setup](docs/SETUP.md) | Credential-free evaluation, Twitch connection, OBS video/audio, troubleshooting |
+| [Architecture](docs/ARCHITECTURE.md) | Mermaid system and sequence diagrams, modules, trust boundaries, persistence |
+| [Verification evidence](judging/EVIDENCE.md) | Automated checks, real Twitch, runtime Codex generation, actual OBS capture |
+| [Final judging review](judging/FINAL_REVIEW.md) | Human-style and AI-style assessments against all four official criteria |
+| [Submission checklist](judging/SUBMISSION_CHECKLIST.md) | Exact remaining deliverables, access requirements, and form fields |
+| [Submission write-up](judging/SUBMISSION_DRAFT.md) · [Demo plan](judging/DEMO_AND_PILOTS.md) | Ready-to-adapt project description and an under-three-minute recording sequence |
+| [Hackathon](https://twitchcon-codex.devpost.com/) · [Rules](https://twitchcon-codex.devpost.com/rules) · [Resources](https://twitchcon-codex.devpost.com/resources) | Official Codex × TwitchCon Hackathon information |
+| Project Devpost page | Not created/verified in the connected account; add the actual project URL before submitting |
+| YouTube demonstration | In preparation; add the final publicly accessible video URL before submitting |
+| [MIT license](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md) | Project reuse terms, dependency notices, original music permission |
 
-Requires Node.js 22 or later.
+**Built end to end with OpenAI Codex.** The creator supplied the concept, product direction, feedback, accounts, and live test participation. Codex implemented the application, Twitch integration, scene runtime, original procedural visuals and music tooling, tests, debugging, OBS setup assistance, and documentation throughout this build. PopForge also uses the genuine Codex SDK at runtime for optional scene creation. Third-party frameworks and SDKs retain their own authorship and licenses.
+
+Development session: **`01a18204-be62-77d1-b0ad-70175ae80ee7`**. Runtime generation evidence: **`01a18c7c-4f21-76f1-a43a-f29d7ddb22bd`**. The main development ID belongs in the submission form.
+
+## The experience
+
+A creator has a few minutes of dead air. They choose **Grow a garden**, select a gentle pace, and start. Chat sends `!water` or `!plant sunset`; the OBS scene responds. Every five accepted live garden contributions adds a flower to the community’s persistent garden. When the creator returns, the controls are beside OBS. A late viewer types `!recap` to learn what happened and how to join in.
+
+One chatter can complete a gentle five-contribution moment by returning after each cooldown. Busy communities get a larger goal and bounded visual effects. This supports participation at different chat activity levels; production audience capacity and retention improvements have not been measured.
+
+| For the creator | For the community |
+| --- | --- |
+| Three quick-start moments and a compact OBS dock | Free commands in the Twitch chat they already use |
+| Private preview, explicit publication, and rollback | A garden that remembers their contributions |
+| Breather, pause/resume, end activity, and quiet controls | Cooperative games, scene proposals, polls, and gentle reactions |
+| Optional original soundscapes and break nudges | A grounded recap and moderated words of kindness |
+
+![Actual OBS recording frame: community garden](docs/assets/community-garden.png)
+
+## How PopForge meets the judging criteria
+
+| Criterion | Concrete implementation | Evidence and practical boundary |
+| --- | --- | --- |
+| **Innovation/Idea** | Combines streamer-approved scene co-creation, short chat games, a lasting community garden, and catch-up lore in one OBS workflow | Codex-generated Purple Community Garden was previewed and published. Four trusted mechanics support ten presets; this is bounded scene generation |
+| **Potential Impact** | Viewers use Twitch directly without a PopForge account; gentle moments are playable by one chatter; creators have clear break/return controls | Separate-account Twitch commands and a single-chatter automated scenario passed. Independent adoption and viewer-retention studies remain future work |
+| **Technological implementation** | Real OAuth/EventSub, authoritative Socket.io state, validated Codex SDK output, role-separated sources, encrypted local identity, durable source links | 41 tests, successful production build, real OAuth restart, runtime generation, and recorded OBS output; detailed evidence is linked above |
+| **Design** | Original cozy environments, accessible custom dropdowns, startup logo animation, four studio themes, reduced motion, bounded particles, original music, and an OBS dock | Browser and OBS checks completed. The rehearsal audio is quiet; final narration/music balance needs listening QA |
+
+The official criteria are equally weighted. These are implementation mappings, not claims about an official score or a guaranteed result.
+
+## Quick start
+
+Requires **Node.js 22+** and npm. macOS Apple Silicon is the platform exercised with real Twitch and OBS; other operating systems have not been live verified.
 
 ```sh
-npm install
+git clone https://github.com/TusharTechs/popforge.git
+cd popforge
+npm ci
 cp .env.example .env
 npm run dev
 ```
 
-Open **http://localhost:4317**. No credentials are needed for recipe generation, demo chat, games, polls, scene previews, or recaps. The companion binds to `127.0.0.1`; it is a single-broadcaster local application, not a publicly exposed server.
+Open **http://localhost:4317**. Recipe mode, scenes, lounge, original music, polls, and local recaps work without Twitch or AI credentials. For labeled synthetic chat rehearsal, open **http://localhost:4317/?lab=1**. Keep rehearsal separate from claims about actual Twitch traffic.
 
 For a production local build:
 
@@ -23,148 +70,128 @@ npm run build
 npm start
 ```
 
-`npm run dev:frontend` runs a separate frontend-only browser demo on port 4318. The hosted static version uses the same browser demo transport.
-
-## Easy live controls
-
-The home screen starts with three ready-to-play moments and a short connection checklist. Choose a garden, moon defense, or focus sprint; pick a duration; then start with one click. Gentle pace needs five contributions and can be completed by one chatter. Lively pace needs 25. Existing active moments are protected from accidental replacement.
-
-- **Take a breather**, **I’m back**, **Pause / Resume**, **End activity**, and **Quiet mode** stay within reach. Ending an activity returns both the round and a breather to standby.
-- **Open compact controls** opens `/dock`. Add this address under OBS **Docks → Custom Browser Docks** to control the companion without another full dashboard. This is an authenticated local control surface, not a read-only source to share.
-- The setup checklist reports actual chat subscription status, connected visual-source sockets, and the last received Twitch chat message. An open preview also counts as a connected source; PopForge does not claim that OBS is capturing or broadcasting it.
-- Viewers use Twitch chat, with no PopForge account. The copyable instructions are copied only; the app does not automatically post them.
-- Moment choice, duration, pace, theme, and hidden setup preference are remembered in this browser. Custom generation remains in **Scene workshop**.
-- The opening logo animation is shown only during actual studio initialization. It has no artificial minimum duration, respects the OS reduced-motion preference, and is hidden on capture/viewer routes. Failed initial module loading offers a retry link after 15 seconds.
-
-## Try the complete loop
-
-1. Press **Forge a scene** in Scene workshop. Recipe remix supports a keyword, duration, accent, and gravity within four trusted mechanics.
-2. Inspect the private sandbox preview. Adjust the scene name or parameters, then press **Publish to stream**. Publication requires a renderer readiness acknowledgment.
-3. Press **Fill dead air**. A countdown starts. For internal rehearsal, add `?lab=1` to the studio URL; in Chat playground, send `!shield` (or `!water` for a garden). Change the demo chatter name to try a second participant. Each account has a three-second contribution cooldown.
-4. Trigger the keyword button to heat the reactor, or send a message containing its keyword. At 100%, the meteor animation activates.
-5. **Open vote** and use `!vote 1`, `!vote 2`, or `!vote 3`. One account has one vote and can change it. Votes close after 45 seconds. Ties use the first listed option; no votes means no winner. **Use twist** puts the winning idea in the composer for streamer approval.
-6. Send `!forge make the meteors low gravity` to create a pending community proposal. It cannot publish itself.
-7. Complete the goal or finish the round. Open **Stream lore** to see the recorded outcome. Save a manual moment to explain a joke, then preview the catch-up card.
-8. Copy the **OBS source** URL and open it in another browser. With the companion running, both views receive the same authoritative state.
-
-## Cozy Lounge and creator comfort
-
-Open **Cozy lounge** in the sidebar, or `/?view=lounge`.
-
-- **Four live environments:** Starlit hideaway, Rainy window, Aurora drift, and Golden-hour arcade. Each is original Canvas2D artwork with bounded community lanterns and constellations. Choose **Use as OBS background** to put the environment in the overlay; previews alone do not change the broadcast.
-- **Original procedural audio:** press **Enable sound** for a generative synth/key soundscape, then mix music, filtered rain, night air, and overall volume. Optional reaction chimes start disabled. No audio downloads or external music service are used. Music never starts automatically. Browser playback and account-free demo mode are supported; actual OBS audio routing needs a live OBS check.
-- **Reactions:** `!heart` / `!hug`, `!glow`, `!star`, and `!hype` add hearts, lanterns, constellation stars, and celebration bursts. Encouragement uses a four-second per-account cooldown and visual bursts are capped at four per second. Every twelve hearts fills a persistent kindness jar. Click the lounge sky in demo mode to submit a labeled demo lantern; read-only viewers cannot mutate shared state.
-- **Community mood suggestions:** `!vibe starlight`, `!vibe rain`, `!vibe aurora`, or `!vibe sunset`. One suggestion per account, with changes allowed. Only the streamer applies the winning atmosphere. Server restarts reopen suggestions with a fresh ledger/count.
-- **Moderated kindness wall:** `!kind your message` enters a bounded approval queue. The streamer approves or dismisses it. Only approved notes appear in the room and recap; removing a note withdraws its matching lore entry too. Viewer snapshots omit the moderation queue. Recent public chat may still contain the original public Twitch command.
-- **Creator corner:** choose a one-, two-, or five-minute breather and a custom community message. An active round pauses; **I’m back** resumes it only if the breather was what paused it. Timer expiry becomes “No rush” and never auto-resumes a broadcast. A manually paused round remains paused.
-- **Gentle break nudges:** explicitly opt in and select 30, 45, 60, or 90 minutes. These are app-local, browser-private preferences displayed in the creator corner and as a discreet studio banner when due, not OS notifications or a stress detector. Snooze a due nudge for ten minutes. Studio session time is not a claim about actual Twitch broadcast duration.
-- **Comfort controls:** Gentle, Balanced, Party, or Quiet energy; adjustable sparkle intensity; separate particle and reduced-motion settings. Quiet pauses local audio and celebration bursts, while contributions still accumulate. Reduced motion stops scene motion and shows only a minimal static reaction.
-
-For sound in OBS, add a second Browser Source using the **OBS sound source** link (`/sound?token=…`), use **Interact**, and press **Enable sound** once. Route that source through OBS audio controls. Use one audio playback surface to avoid doubling the sound. The sound URL is read-only and persists across companion restarts, like the visual source URL.
-
-Nightshift from Meterless was reviewed as an optional future asset-generation pipeline. This build does not install, call, or depend on Nightshift, and no generated or licensed third-party tracks are bundled. See [Meterless’s engine overview](https://meterless.ai/engines.html).
-
-## Twitch integration
-
-Create a confidential application in the [Twitch developer console](https://dev.twitch.tv/console/apps). Register this exact OAuth redirect:
-
-```text
-http://localhost:4317/auth/twitch/callback
-```
-
-Set `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` in `.env`, restart the companion, and use **Connections → Connect Twitch**. Do not place secrets in a frontend environment variable. The flow requests `user:read:chat` and `user:write:chat`; it uses the broadcaster account for EventSub chat and `!recap` responses.
-
-Twurple manages token refresh and EventSub WebSocket reconnection. The integration reads chat and channel category, processes the commands above, and responds to `!recap` with a short event-grounded summary (channel-wide 30-second reply cooldown). OAuth state is expiring, one-use, and tied to the initiating local session. The host authorization is encrypted in the local identity file and restored on startup. Refreshed credentials are saved too. **Disconnect** stops listening and removes the remembered host credentials; it does not revoke the app in Twitch account settings. Failed network restores keep credentials for **Retry saved connection**, while invalid authorization may require connecting again. Relay guest tokens remain memory-only.
-
-Demo message submission is disabled while Twitch is connected. The dashboard displays connection/subscription errors. **Live verified on October 28, 2026:** Twitch OAuth, EventSub receipt, hearts, a free vote, a game contribution, mood suggestions, moderated kindness approval, and an API recap response were exercised on `techtushstreams`. The initial run used the broadcaster as the chatter. A later check received shield and heart commands from the separate `popforgeontwitch` account. These are chat-participation checks, not viewer-count measurements. Category metadata is not gameplay-state detection.
-
-## OBS
-
-Choose **OBS source**, copy the read-only URL, and add a Browser Source at **1920 × 1080**. The route has a transparent background. Keep the companion running and the source loaded. The same read-only URL survives companion restarts. The dashboard and source reconnect when the server returns. Use **Replace source links** in the source dialog to revoke existing source URLs; then update all affected sources. Upgrading from a pre-persistence build requires copying the new link once. Preferences includes a compact overlay mode.
-
-The OBS URL can read scene state but cannot submit studio commands, even if the browser has a studio cookie. Do not share it outside your broadcast tooling: it grants read access to this session's public chat and event log. The local recap URL is also read-only and intended for local/testing use. A local `localhost` link cannot serve remote viewers; a public viewer service/Extension remains a later deployment step. Twitch chat's `!recap` works for remote viewers once connected.
-
-The hosted frontend demo syncs via localStorage and BroadcastChannel between tabs **in the same browser profile**. OBS has its own browser profile, so real OBS synchronization requires the companion. The source dialog explains this limitation.
-
-## Optional Codex SDK generation
-
-Authenticate your Codex CLI, set `ENABLE_CODEX=true` in `.env`, and restart. Choose **Codex SDK** in the composer. Leave `CODEX_MODEL` empty to use the configured account default or explicitly set one available to your account. Generation can consume your account allowance.
-
-The server runs the genuine `@openai/codex-sdk` with JSON-schema structured output, an isolated working directory, read-only sandbox, no web search, and a 90-second timeout. The subprocess does not inherit Twitch client secrets. Valid output is parsed again with Zod. Generation errors stay errors; they do not silently become a fake AI result. A configured request returns its thread ID for development evidence. **The SDK path has been type-checked but not exercised against a paid/authenticated account in this build.**
-
-The first version generates **scene data**, not arbitrary executable overlays. The four supported mechanics are keyword reactor, cooperative meteor defense, cooperative garden, and focus countdown. Recipe mode deterministically matches supported parameters; it does not claim to understand every prompt. Unsupported concepts require a new trusted mechanic. Open-ended code generation and a code execution service are future work.
-
-## Architecture
-
-- `shared/engine.ts`: schema, bounded scene recipes, authoritative commands, vote deduplication, contribution cooldowns, timed rounds, scene history, and grounded recap selection.
-- `server/index.ts`: Express/Vite host, protected studio session, Socket.io state transport, read-only source authentication, state persistence.
-- `server/twitch.ts`: OAuth-backed Twurple EventSub integration, remembered host authorization, and chat recap responses.
-- `server/local-identity.ts`: local encrypted credentials and durable read-only source identity.
-- `src/LiveControls.tsx`: setup checklist, simple live workflow, and compact OBS dock.
-- `src/StartupScreen.tsx` / `public/startup.css`: accessible logo startup animation and matching first-paint shell.
-- `server/generator.ts`: optional Codex SDK structured scene generation; credential-free recipe fallback selected explicitly by the user.
-- `src/client.ts`: server transport and browser-only demo transport.
-- `src/renderer.ts`: trusted Canvas2D simulation with simple gravity and circle collision response; no external assets or network access.
-- `src/SceneFrame.tsx`: sandboxed renderer and readiness bridge.
-- `shared/lounge.ts`: validated atmosphere, comfort, break, effects, and kindness schemas.
-- `src/Lounge.tsx`: environments, creator corner, kindness wall, community suggestions, and ambient overlay HUD.
-- `src/audio.ts` / `src/AudioDock.tsx`: opt-in procedural Web Audio engine and mixer, with an OBS sound route.
-- `src/App.tsx`: studio, library, chronicle, connections, preferences, OBS source, and viewer recap routes.
-
-The renderer runs in a sandboxed `srcdoc` iframe with scripts allowed, no same-origin privileges, and a restrictive CSP. No credentials are sent into it. No generated strings are interpolated into its executable source. The trusted renderer consumes bounded data using postMessage; the host verifies readiness by the frame's source window. Previewing a candidate leaves the published scene running. Publishing updates the existing stage without reloading the OBS route; the last three scene definitions remain available for rollback. This is a trusted-scene runtime, not a general-purpose untrusted JavaScript sandbox.
-
-Physics is visual; the authoritative game result depends on chat contributions and the deadline. There are no financial stakes. Streamer approval and server-originated events are the authority. Fullscreen Extensions, Bits, Channel Points, native Predictions, automated game verification, and rolling stream transcription are not implemented. Browser speech recognition is an optional keyword-only input; audio is processed by the browser's speech service after its permission prompt. It does not create a transcript or lore summary.
-
-## State and privacy
-
-The local companion writes an atomic snapshot to ignored `.data/state.json`; browser demo data remains in localStorage. Both include recent public chat (50 messages), events (80), and pending proposals (10). Host OAuth credentials and the read-only source token are persisted separately in `.data/identity.enc` using AES-256-GCM. The 32-byte key is in `.data/identity.key`; both files use owner-only permissions, and `.data` is owner-only. Encryption protects against accidentally sharing the public state file; anyone with access to both identity files can decrypt them. Never include `.data` in a deployment or share it. Corrupted/missing keys fail closed, preserving the original files for recovery. Reset session clears workspace state, while Disconnect explicitly forgets host authorization. Private deduplication/vote/cooldown ledgers are in memory; see `KNOWN_LIMITATIONS.md` for restart behavior. The app does not detect passive viewer joins or identify lurkers.
-
-## Verification
+For automated checks:
 
 ```sh
 npm test
 npm run build
+# With the companion already running:
+npm run verify:local
 ```
 
-Tests cover voting semantics and deadlines, event deduplication, cooldowns, pause/resume, win/loss outcomes, schema bounds, rollback, grounded lore, request/session protection, read-only authorization even with shared cookies, and state synchronization to viewer sockets. Browser QA covers generation/preview/publication, demo commands, voting, navigation, ambient sound start/stop, quiet mode, lantern contributions, kindness approval, and the breather UI. Real Twitch chat/EventSub and the Send Chat Message API have been verified on the configured broadcaster channel. A separate browser overlay displayed the approved real Twitch note. Codex generation and OBS Studio capture itself remain unverified. The separate chatter account was tested later as noted above. The live run also found and fixed a missing New vote control after a completed vote.
+`npm run dev:frontend` provides a separate browser-only preview at port **4318**. That mode synchronizes tabs in the same browser profile using localStorage/BroadcastChannel; the local companion uses server-authoritative sockets across studio and OBS browser profiles.
 
-## References
+**Live setup:** follow [docs/SETUP.md](docs/SETUP.md) to register the Twitch application, configure `.env`, authorize the broadcaster, and add visual/audio sources to OBS. The service binds to `127.0.0.1`. Do not expose it as a public web server.
 
-- [Twitch EventSub WebSockets](https://dev.twitch.tv/docs/eventsub/handling-websocket-events/)
-- [Twurple listener setup](https://twurple.js.org/docs/getting-data/eventsub/listener-setup.html)
-- [Codex SDK](https://developers.openai.com/codex/sdk/)
-- [Twitch Extension policies](https://dev.twitch.tv/docs/extensions/guidelines-and-policies/)
+## What’s implemented
 
-Built for the Codex × TwitchCon Hackathon. PopForge is an independent project, not an official Twitch or OpenAI product.
+### Live controls and co-creation
 
-### Creator Relay
+- Three quick-start moments: garden, moon defense, and focus sprint. Choose 1, 3, or 5 minutes and a gentle 5-contribution or lively 25-contribution goal. An active moment cannot be accidentally replaced.
+- Scene workshop with ten presets across reactor, meteor defense, garden, and focus. Deterministic **Recipe remix** is an explicitly selected, account-free mode; **Codex SDK** is a separate genuine generation path.
+- A private preview must report renderer readiness before publication. Published state updates the existing browser source without reloading its route. The last three scene definitions support rollback.
+- Free chat polls last 45 seconds: one choice per account, changes allowed. Chat proposals enter a bounded queue; the creator approves what reaches the stream. These are application polls, not native Twitch Predictions or Channel Point transactions.
+- Pause/resume, end activity, quiet mode, and a breather that never auto-returns the creator. Focus-task success requires explicit creator confirmation; a timer or cheer goal does not verify real-world work.
 
-Open **Creator relay** in the sidebar. Rehearsal mode simulates both creator approvals and individual chat choices entirely locally. The load lab runs an isolated worker with up to 100,000 synthetic participants; its report measures only engine processing, not Twitch, network, viewership or growth.
+### Community memory and catch-up
 
-For a local live experiment, connect the host to Twitch, create an episode, and open its single-use invitation in a separate browser profile on the same computer. The guest authorizes their own Twitch account and both creators explicitly approve the introduction and active collaboration. Each channel's chat can vote with `!relay 1`, `!relay 2` or `!relay 3`: each community's distribution contributes up to 50% of the result. Each Twitch account has one choice across the episode and both broadcaster accounts are excluded. The host starts, pauses and finishes; either creator may withdraw. A handoff requires host confirmation and the broadcaster manually executes the raid in Twitch. The Relay OBS source is read-only and displays only after both approvals.
+- Accepted live garden contributions accumulate; every five grows a flower. `!plant mint`, `!plant moon`, or `!plant sunset` chooses the color when completing a set. The latest 24 flowers and live contribution total persist across restarts and fresh sessions.
+- Synthetic rehearsal has its own garden. Duplicate events, idle commands, and cooldown violations cannot inflate live progress.
+- A recap selects up to three events from the bounded event log and approved creator notes. `!recap` replies directly in Twitch chat, with a channel-wide 30-second reply cooldown. It does not invent gameplay, infer inside jokes from video, or transcribe a broadcast.
 
-The invitation expires after 30 minutes. Relay sessions, vote ledgers, and guest Twitch tokens are memory-only. A restart clears the episode and requires a new invitation and guest authorization; the host connection can restore automatically. This is a same-computer proof of concept; localhost invitations are not remote collaboration links. Do not expose the local companion to the Internet. No discovery directory or matchmaking service is implemented.
+### Cozy Lounge, music, and creative assets
 
-### Streamer studio polish
+- Four original Canvas environments: Starlit hideaway, Rainy window, Aurora drift, and Golden-hour arcade. The creator decides whether they become a full OBS background.
+- Hearts, lanterns, stars, bounded celebration particles, a persistent kindness jar, community mood suggestions, and a kindness approval queue. Mood suggestions never change the environment without creator approval.
+- Optional procedural Web Audio, filtered rain/night air, and three original synthesized WAV loops: **Moonlit Desk**, **Peach Tea**, and **Aurora Drift**. Start sound explicitly in OBS Interact; use one playback surface to avoid doubling.
+- Quiet energy, reduced motion, adjustable effects, private opt-in break nudges, keyboard-operable custom dropdowns, Forest/Plum/Ocean/Charcoal themes, and a startup animation tied to actual initialization.
+- Six customizable SVG asset types in three palettes, including title cards, panels, and transparent webcam frames. Cursor glow is optional, limited to the studio preview, and suppressed for reduced motion/coarse pointers.
 
-The Relay rehearsal is a developer tool at `/relay?lab=1`; everyday Relay opens live collaboration. Studio synthetic chat controls are available only with `?lab=1`. Ten scene presets reuse the four tested rendering mechanics. The Creative kit downloads customizable original SVG title cards, panels and transparent webcam frames. All select controls use the in-app listbox with keyboard navigation.
+![Actual OBS recording frame: Golden-hour arcade](docs/assets/cozy-lounge.png)
 
-The sound source now includes three original synthesized instrumental WAV loops, reproducible with `node scripts/compose-music.mjs`. See `public/music/LICENSE.txt` for stream/VOD reuse permission. Tracks start on user input and pause in quiet mode. Track selection/playback is local to that browser: select your music in OBS Interact. External NCS/NEFFEX links are policy resources, not a redistributed catalog; automated copyright claims cannot be guaranteed absent.
+### Creator Relay — prototype
 
-### Ease-of-use verification (October 30, 2026)
+Two creators explicitly approve a shared episode; each community contributes up to 50% of the decision, so raw chat size cannot dominate the other side. One Twitch identity has one choice across both communities; broadcaster accounts are excluded. Disconnect pauses the episode, either creator can withdraw, and a raid remains a manual native Twitch action.
 
-Automated coverage includes encrypted save/load, credential refresh persistence with a mocked Twitch runtime, disconnect/late-refresh races, failed restore recovery, changed client identity, source links across an actual companion process restart, source presence, and explicit link revocation. The gentle moment is tested with one chatter. Browser checks exercise the new controls, the dock, remembered preferences, and reconnection. A new real Twitch sign-in is still needed to verify host authorization surviving a restart end to end; mocked tests are not a live Twitch claim. The hosted Site remains a private static preview.
+Current invitations are localhost-only and require the same computer. Guest credentials and episode ledgers are memory-only. Remote collaboration, discovery, and real two-broadcaster validation remain unfinished. The internal load lab measures engine behavior, not Twitch viewers, network capacity, or growth.
 
-### Lasting community garden
+## Viewer command guide
 
-During a garden round, every accepted live contribution grows the garden; every five grows a flower. `!plant mint`, `!plant moon`, or `!plant sunset` contributes like `!water`; the fifth contribution chooses the flower’s color. Existing event deduplication and contribution cooldowns apply. Only Twitch events change the live garden. Rehearsal contributions have a separate garden. Total live contributions and the latest 24 flowers persist in the companion snapshot and survive a fresh-session reset. The garden is local to this broadcaster companion, without a public cross-channel service.
+| Command | Result |
+| --- | --- |
+| `!water` | Contribute during a garden round |
+| `!plant mint` / `!plant moon` / `!plant sunset` | Garden contribution; chooses the flower color when completing a five-contribution set |
+| `!shield` / `!cheer` | Contribute during an active cooperative round; 3-second per-account cooldown |
+| `!heart` / `!hug`, `!glow`, `!star`, `!hype` | Cozy reactions; 4-second encouragement cooldown and bounded bursts |
+| `!vibe starlight` / `rain` / `aurora` / `sunset` | Suggest an atmosphere; the creator applies it |
+| `!kind your message` | Submit a kindness note for creator approval |
+| `!vote 1` / `!vote 2` / `!vote 3` | Vote in an open application poll |
+| `!forge your idea` | Propose a scene for creator review |
+| `!recap` | Receive a short event-grounded recap in Twitch chat |
+| `!relay 1` / `!relay 2` / `!relay 3` | Choose during an approved, active Relay episode |
 
-Focus rounds run until the deadline or explicit finish, even if chat meets its cheer goal. The streamer explicitly confirms their own task; timer expiry never verifies the task. Recaps use scene-specific outcomes.
+## Architecture
 
-A gentle cursor glow is opt-in below the lasting garden and applies only to the live-stage preview. It preserves the system pointer, remains absent from OBS and the compact dock, and is suppressed for coarse pointers and reduced motion.
+```mermaid
+flowchart LR
+    Creator["Creator: studio / OBS dock"] -->|"Local control session"| API["Express + Socket.io companion"]
+    Chat["Community in Twitch chat"] --> Twitch["Twitch OAuth / EventSub / Helix"]
+    Twitch --> Bridge["Twurple bridge"]
+    Bridge --> Engine["Authoritative ForgeEngine"]
+    API --> Engine
+    Creator -->|"Scene request"| Gen["Recipe remix or Codex SDK"]
+    Gen --> Schema["Zod scene validation"]
+    Schema --> Preview["Private sandboxed preview"]
+    Preview -->|"Ready + creator approval"| API
+    Engine -->|"Batched state snapshots"| API
+    API -->|"Read-only source token"| OBS["OBS: trusted Canvas overlay"]
+    API -->|"Read-only source token"| Audio["OBS: opt-in audio source"]
+    Engine --> State[("Local state snapshot")]
+    Bridge <--> Identity[("Encrypted host identity")]
+    Engine -->|"Grounded recap"| Bridge
+    Bridge -->|"Send Chat Message API"| Chat
+```
 
-See `judging/DEMO_AND_PILOTS.md` for an honest demonstration sequence, remaining live checks, and a pilot observation template.
+The complete [architecture guide](docs/ARCHITECTURE.md) explains the scene-publication sequence, renderer boundary, local authorization, persistence, restart semantics, bounded data, and module map.
 
-## Codex CLI compatibility verification
+## Built with Codex, from idea to verification
 
-The SDK’s bundled CLI (0.149.1) rejected the configured model. Using the installed Codex CLI (0.165.0-alpha.1.2) succeeded with the existing ChatGPT login and unchanged model selection. PopForge now prefers an executable on PATH, supports an explicit CODEX_CLI_PATH override, and falls back to the SDK bundle if neither is available. Generation returned a validated Purple Bloom Garden specification and session 01a18c78-fd71-79c1-8298-2b5b49655a7b. This supersedes earlier notes describing all runtime generation as unverified or blocked. Actual OBS capture and a complete on-stream demonstration remain separate checks.
+Codex served as the end-to-end implementation agent throughout the project: translating the creator’s idea into a runnable product; writing frontend/backend code, Twitch connections, procedural visuals and music tooling; adding regression tests; diagnosing live integration issues; helping configure OBS; and preparing reproducible documentation. Human direction, credential entry, product feedback, and real chatter participation stayed with the creator.
+
+There is also an optional **runtime Codex SDK** pipeline:
+
+1. The creator requests a scene; the server starts a genuine `@openai/codex-sdk` thread.
+2. Generation uses structured JSON schema output in an isolated working directory with a read-only sandbox, no web search, network disabled, and a 90-second timeout. Twitch secrets are excluded from the subprocess environment.
+3. Zod validates the returned specification again. Only four trusted mechanics and bounded parameters are accepted; arbitrary generated JavaScript is never executed.
+4. The creator inspects the private preview and explicitly publishes. Errors stay errors; they do not silently turn into fake AI results.
+
+A real request generated **Purple Community Garden in 14.0 seconds**, then passed preview readiness and publication. That is one measured run, not a latency guarantee. An installed Codex CLI resolved a compatibility failure in the SDK-bundled CLI without changing the configured account model. `CODEX_CLI_PATH` can override executable selection.
+
+See [evidence](judging/EVIDENCE.md) for the development/runtime session distinction and verified limits. Runtime generation is optional and can use an account allowance; recipe mode evaluates the interactive experience without AI credentials.
+
+## Technical and privacy boundaries
+
+The full product is a **local, single-broadcaster companion** plus an owner-private hosted preview. The hosted preview does not provide the Twitch backend. Viewers need no PopForge account because participation happens through Twitch.
+
+- Studio controls use a local HttpOnly session; read-only visual/audio sources have a separate token. Viewer sockets cannot mutate state even when their browser shares a studio cookie. Source links survive restarts and can be explicitly revoked.
+- Host credentials use AES-256-GCM with owner-only identity files and a separate local key. This is not an OS keychain: someone controlling the same OS account can read both files. Disconnect forgets saved authorization locally; Twitch consent revocation is separate.
+- Public state snapshots omit pending proposals and the kindness moderation queue. Recent public Twitch chat can still contain the original command text. State retains up to 50 chat messages, 80 events, and 10 proposals.
+- Restarts restore the host connection and stable source identity; active rounds return to standby and open polls close because private deduplication/vote ledgers are not persisted. Relay guests must reconnect.
+- Optional browser speech recognition detects one keyword after permission. It is not stream transcription; processing may use the browser’s speech service.
+- No Bits wagering, Channel Point payouts, native Predictions, automatic game/bounty verification, public Twitch Extension, or public multi-tenant service is implemented. No passive viewer identification or guaranteed retention/growth is claimed.
+
+Read [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) before evaluating deployment, privacy, or scale.
+
+## Verification and submission status
+
+**Verified on 30 October 2026:** 41 tests pass; TypeScript/Vite production build succeeds; npm audit reports zero known dependency vulnerabilities in the locked dependency set. Real Twitch OAuth/EventSub, separate-chatter commands, host restoration, runtime Codex generation, OBS dock/source setup, and a 35.43-second audiovisual recording have evidence. The recording is **1280 × 720 at 30 fps**, with non-silent 48 kHz stereo AAC. Its quiet music mix needs a final listening check. Twitch broadcasting stayed off during rehearsal.
+
+The current build emits a warning for a roughly 541 KB minified main JavaScript chunk. Code splitting, independent creator pilots, remote Relay, and larger transport-scale testing are future improvements. Automated checks do not substitute for those observations.
+
+The final YouTube video, Devpost project/submission, private repository judge access, and confirmation of entrant declarations are outstanding. Follow [the submission checklist](judging/SUBMISSION_CHECKLIST.md); the owner-private preview alone is insufficient judge access.
+
+## License and acknowledgments
+
+PopForge’s original application code and artwork are released under the [MIT License](LICENSE). Original instrumental recordings additionally carry explicit stream/VOD reuse permission in [public/music/LICENSE.txt](public/music/LICENSE.txt). Dependencies keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Built for the **Codex × TwitchCon Hackathon**. Independent project; not an official Twitch or OpenAI product. Twitch and OpenAI names identify the integrations and event; no endorsement is implied.

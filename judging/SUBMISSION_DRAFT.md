@@ -18,7 +18,7 @@ A compact browser dock puts live controls beside OBS. The visual source URL surv
 
 ## How we used Codex
 
-Codex assisted implementation, debugging, tests, and visual iteration. PopForge also uses the official Codex SDK at runtime to generate a bounded scene specification, validated against a schema and rendered by trusted Canvas code. Private previews use a sandboxed iframe; the OBS source uses a direct canvas for CEF transparency compatibility. It does not execute arbitrary generated widgets.
+PopForge was built end to end with Codex under human product direction: frontend and backend implementation, Twitch integration, original procedural visuals/music tooling, tests, debugging, visual iteration, and documentation. Third-party libraries retain their original authorship and licenses. PopForge also uses the official Codex SDK at runtime to generate a bounded scene specification, validated against a schema and rendered by trusted Canvas code. Private previews use a sandboxed iframe; the OBS source uses a direct canvas for CEF transparency compatibility. It does not execute arbitrary generated widgets.
 
 The full local runtime flow was exercised: a Codex request generated Purple Community Garden in 14.0 seconds, the private renderer became ready, and publication updated the studio stage. Runtime session: 01a18c7c-4f21-76f1-a43a-f29d7ddb22bd.
 
@@ -47,3 +47,7 @@ Public YouTube video URL: PENDING — record and upload the real demonstration b
 ## Next steps
 
 Independent creator pilots, a secure public service with per-channel isolation, remote collaboration, and richer community creations. These are future milestones.
+
+## Submission readiness
+
+See [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) for the complete outstanding requirements and required owner form answers. The repository remains private by the owner’s choice; the owner will arrange judge access. A PopForge project was not found in the connected Devpost account during the final review, and no submission is claimed. Public video, access, owner declarations, and final Submitted status still need completion.
