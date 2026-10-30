@@ -44,3 +44,7 @@
 The lasting garden now implements one persistent community creation: live garden contributions and up to 24 flower colors survive snapshots and fresh sessions. Browser rehearsal has a separate garden. This is not the proposed café simulation or a hosted multi-streamer world. The previous note listing persistent world mechanics as entirely absent is superseded by this limited garden implementation. Actual OBS capture, real OAuth restart verification, remote Relay, independent pilots, and public service hosting remain outstanding until separately exercised.
 
 A real runtime SDK request was attempted with the existing ChatGPT login. It failed because the configured gpt-6.1-sol model was rejected for that account. Recipe generation remains working. Configure an available CODEX_MODEL before recording runtime generation as successful.
+
+## Codex CLI compatibility verification
+
+The SDK’s bundled CLI (0.149.1) rejected the configured model. Using the installed Codex CLI (0.165.0-alpha.1.2) succeeded with the existing ChatGPT login and unchanged model selection. PopForge now prefers an executable on PATH, supports an explicit CODEX_CLI_PATH override, and falls back to the SDK bundle if neither is available. Generation returned a validated Purple Bloom Garden specification and session 01a18c78-fd71-79c1-8298-2b5b49655a7b. This supersedes earlier notes describing all runtime generation as unverified or blocked. Actual OBS capture and a complete on-stream demonstration remain separate checks.

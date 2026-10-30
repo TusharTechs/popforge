@@ -164,3 +164,7 @@ Focus rounds run until the deadline or explicit finish, even if chat meets its c
 A gentle cursor glow is opt-in below the lasting garden and applies only to the live-stage preview. It preserves the system pointer, remains absent from OBS and the compact dock, and is suppressed for coarse pointers and reduced motion.
 
 See `judging/DEMO_AND_PILOTS.md` for an honest demonstration sequence, remaining live checks, and a pilot observation template.
+
+## Codex CLI compatibility verification
+
+The SDK’s bundled CLI (0.149.1) rejected the configured model. Using the installed Codex CLI (0.165.0-alpha.1.2) succeeded with the existing ChatGPT login and unchanged model selection. PopForge now prefers an executable on PATH, supports an explicit CODEX_CLI_PATH override, and falls back to the SDK bundle if neither is available. Generation returned a validated Purple Bloom Garden specification and session 01a18c78-fd71-79c1-8298-2b5b49655a7b. This supersedes earlier notes describing all runtime generation as unverified or blocked. Actual OBS capture and a complete on-stream demonstration remain separate checks.

@@ -38,3 +38,9 @@ No pilots have been claimed by this document. No measured retention or growth cl
 ## Runtime generation attempt
 
 The existing Codex CLI reported a ChatGPT login. A real SDK request was attempted. The service rejected the configured `gpt-6.1-sol` model with `model_not_found`, stating it is unsupported for Codex with this ChatGPT account. No successful runtime generation is claimed. Configure `CODEX_MODEL` with a model available to this account, then repeat generation, private preview, and publication before including that feature in the demo.
+
+## Codex CLI compatibility verification
+
+The SDK’s bundled CLI (0.149.1) rejected the configured model. Using the installed Codex CLI (0.165.0-alpha.1.2) succeeded with the existing ChatGPT login and unchanged model selection. PopForge now prefers an executable on PATH, supports an explicit CODEX_CLI_PATH override, and falls back to the SDK bundle if neither is available. Generation returned a validated Purple Bloom Garden specification and session 01a18c78-fd71-79c1-8298-2b5b49655a7b. This supersedes earlier notes describing all runtime generation as unverified or blocked. Actual OBS capture and a complete on-stream demonstration remain separate checks.
+
+The full local app workflow was subsequently exercised: Codex generated Purple Community Garden in 14.0 seconds, the private renderer reported ready, and Publish updated the studio stage. Session: 01a18c7c-4f21-76f1-a43a-f29d7ddb22bd. Screenshot evidence is saved outside the source checkout. This verifies local generation, preview, and publication; Twitch and OBS capture were not part of this run.
