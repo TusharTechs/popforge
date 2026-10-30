@@ -104,11 +104,11 @@ function renderScene(){
     ellipse(480,265,248,138,-.27,accent+'14');ellipse(480,265,310,195,.28,accent+'0b');
     if(scene.kind==='garden'){
       ellipse(480,365,210,47,0,accent+'35');
-      const n=5+Math.floor(percent*16);
+      const blooms=data.garden?.blooms??[];const n=Math.min(24,Math.max(1,blooms.length));
       for(let i=0;i<n;i++){
         const x=325+(i*57)%320,y=330+(i*31)%70,h=60+(i%4)*18;
         ctx.strokeStyle='#6eaa7d';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+Math.sin(t+i)*5,y-h/2,x,y-h);ctx.stroke();
-        const bx=x,by=y-h;for(let k=0;k<5;k++){const a=k*Math.PI*2/5+t*.1;dot(bx+Math.cos(a)*10,by+Math.sin(a)*10,9,i%2?accent:'#d2b5ff');}dot(bx,by,5,'#ffe19c');
+        const bx=x,by=y-h;for(let k=0;k<5;k++){const a=k*Math.PI*2/5+t*.1;dot(bx+Math.cos(a)*10,by+Math.sin(a)*10,9,({mint:'#8ce5ba',moon:'#d2b5ff',sunset:'#ffbf96'} as Record<string,string>)[blooms[i]]??accent);}dot(bx,by,5,'#ffe19c');
         ctx.fillStyle='#6eaa7d';ctx.beginPath();ctx.ellipse(x+9,y-h/2,13,5,-.5,0,Math.PI*2);ctx.fill();
       }
       dot(685,160,28,accent+'12');ctx.font='27px sans-serif';ctx.fillText('✦',675,170);
@@ -166,7 +166,7 @@ function renderScene(){
       roundRect(386,395,188,42,21,'#0b0f0dd9');ctx.strokeStyle=accent+'30';ctx.stroke();
       ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 17px monospace';ctx.fillText(`${Math.floor(left/60000).toString().padStart(2,'0')}:${Math.floor(left%60000/1000).toString().padStart(2,'0')}  ·  ${round.shields}/${scene.goal}`,480,422);
     }else if(round.status==='ended'){
-      ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 20px sans-serif';ctx.fillText(round.outcome==='saved'?'A little chaos. A community victory.':'One cracked moon. One very good story.',480,414);
+      ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 20px sans-serif';ctx.fillText(round.outcome==='saved'?'A little chaos. A community victory.':scene.kind==='garden'?'A little progress stays with us.':scene.kind==='focus'?'Sprint ended. Take a breath.':'One cracked moon. One very good story.',480,414);
     }
     reactionBursts();ctx.textAlign='left';ctx.restore();requestAnimationFrame(frame);
   }

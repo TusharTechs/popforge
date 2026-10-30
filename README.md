@@ -154,3 +154,13 @@ The sound source now includes three original synthesized instrumental WAV loops,
 ### Ease-of-use verification (October 30, 2026)
 
 Automated coverage includes encrypted save/load, credential refresh persistence with a mocked Twitch runtime, disconnect/late-refresh races, failed restore recovery, changed client identity, source links across an actual companion process restart, source presence, and explicit link revocation. The gentle moment is tested with one chatter. Browser checks exercise the new controls, the dock, remembered preferences, and reconnection. A new real Twitch sign-in is still needed to verify host authorization surviving a restart end to end; mocked tests are not a live Twitch claim. The hosted Site remains a private static preview.
+
+### Lasting community garden
+
+During a garden round, every accepted live contribution grows the garden; every five grows a flower. `!plant mint`, `!plant moon`, or `!plant sunset` contributes like `!water`; the fifth contribution chooses the flower’s color. Existing event deduplication and contribution cooldowns apply. Only Twitch events change the live garden. Rehearsal contributions have a separate garden. Total live contributions and the latest 24 flowers persist in the companion snapshot and survive a fresh-session reset. The garden is local to this broadcaster companion, without a public cross-channel service.
+
+Focus rounds run until the deadline or explicit finish, even if chat meets its cheer goal. The streamer explicitly confirms their own task; timer expiry never verifies the task. Recaps use scene-specific outcomes.
+
+A gentle cursor glow is opt-in below the lasting garden and applies only to the live-stage preview. It preserves the system pointer, remains absent from OBS and the compact dock, and is suppressed for coarse pointers and reduced motion.
+
+See `judging/DEMO_AND_PILOTS.md` for an honest demonstration sequence, remaining live checks, and a pilot observation template.

@@ -29,10 +29,13 @@ export type TimelineEvent = { id: string; at: number; title: string; detail: str
 export type ChatMessage = { id:string; at:number; user:string; text:string; source:'demo'|'twitch' };
 export type Poll = { id:string; question:string; options:string[]; counts:number[]; endsAt:number; status:'open'|'closed'; winner:number|null };
 export type Round = { id:string; status:'idle'|'playing'|'paused'|'ended'; deadline:number; remaining:number; shields:number; actions:number; participants:number; outcome:'saved'|'lost'|null };
-export type ForgeState = { version:1; revision:number; scene:Scene; previous:Scene[]; charge:number; round:Round; poll:Poll|null; events:TimelineEvent[]; chat:ChatMessage[]; proposals:{id:string;user:string;text:string}[]; stats:{scenes:number;rounds:number;actions:number}; settings:{reducedMotion:boolean;compact:boolean}; lounge:LoungeState; };
+const GardenSchema=z.object({water:z.number().int().min(0).max(100000000),blooms:z.array(z.enum(['mint','moon','sunset'])).max(24)});
+export type GardenMemory=z.infer<typeof GardenSchema>;
+const emptyGarden=():GardenMemory=>({water:0,blooms:[]});
+export type ForgeState = { garden:GardenMemory; demoGarden:GardenMemory; taskConfirmed:boolean; version:1; revision:number; scene:Scene; previous:Scene[]; charge:number; round:Round; poll:Poll|null; events:TimelineEvent[]; chat:ChatMessage[]; proposals:{id:string;user:string;text:string}[]; stats:{scenes:number;rounds:number;actions:number}; settings:{reducedMotion:boolean;compact:boolean}; lounge:LoungeState; };
 export const CommandSchema = z.discriminatedUnion('type', [
   z.object({type:z.literal('startMoment'),scene:SceneSchema}),
-  z.object({type:z.literal('endActivity')}),
+  z.object({type:z.literal('endActivity')}),z.object({type:z.literal('confirmTask')}),
   z.object({type:z.literal('publish'),scene:SceneSchema}), z.object({type:z.literal('rollback')}),
   z.object({type:z.literal('start')}), z.object({type:z.literal('pause')}),z.object({type:z.literal('resume')}),z.object({type:z.literal('finish')}),
   z.object({type:z.literal('stop')}), z.object({type:z.literal('keyword')}),z.object({type:z.literal('resetCharge')}),
@@ -54,13 +57,13 @@ export type Command = z.infer<typeof CommandSchema>;
 const uid = () => globalThis.crypto.randomUUID();
 const idle = (duration=180): Round => ({id:uid(),status:'idle',deadline:0,remaining:duration*1000,shields:0,actions:0,participants:0,outcome:null});
 export function initialState(): ForgeState {
-  return {version:1,revision:0,scene:{...RECIPES[0].scene},previous:[],charge:30,round:idle(),poll:null,events:[],chat:[],proposals:[],stats:{scenes:0,rounds:0,actions:0},settings:{reducedMotion:false,compact:false},lounge:initialLounge()};
+  return {garden:emptyGarden(),demoGarden:emptyGarden(),taskConfirmed:false,version:1,revision:0,scene:{...RECIPES[0].scene},previous:[],charge:30,round:idle(),poll:null,events:[],chat:[],proposals:[],stats:{scenes:0,rounds:0,actions:0},settings:{reducedMotion:false,compact:false},lounge:initialLounge()};
 }
 export function restoreState(raw: unknown): ForgeState {
   try {
     const v = raw as ForgeState;
     if(v.version !== 1 || !Number.isFinite(v.revision) || !Array.isArray(v.events) || !Array.isArray(v.chat) || !v.round || !v.stats || !v.settings) return initialState();
-    return {...v,scene:SceneSchema.parse(v.scene),previous:(v.previous??[]).slice(-3).map(s=>SceneSchema.parse(s)),events:v.events.slice(0,80),chat:v.chat.slice(-50),proposals:(v.proposals??[]).slice(0,10),lounge:restoreLounge(v.lounge)};
+    return {...v,garden:GardenSchema.safeParse(v.garden).success?GardenSchema.parse(v.garden):emptyGarden(),demoGarden:GardenSchema.safeParse(v.demoGarden).success?GardenSchema.parse(v.demoGarden):emptyGarden(),taskConfirmed:v.taskConfirmed===true,scene:SceneSchema.parse(v.scene),previous:(v.previous??[]).slice(-3).map(s=>SceneSchema.parse(s)),events:v.events.slice(0,80),chat:v.chat.slice(-50),proposals:(v.proposals??[]).slice(0,10),lounge:restoreLounge(v.lounge)};
   } catch { return initialState(); }
 }
 export function remix(prompt: string): Scene {
@@ -95,7 +98,10 @@ export class ForgeEngine {
   private changed(){this.state={...this.state,revision:this.state.revision+1};return this.state;}
   dispatch(input:unknown,now=Date.now()): ForgeState {
     const c=CommandSchema.parse(input);const s=this.state;
-    if(c.type==='startMoment'){
+    if(c.type==='confirmTask'){
+      if(s.scene.kind!=='focus'||s.taskConfirmed||s.round.status==='idle')throw new Error('Start a focus sprint before confirming your task.');
+      s.taskConfirmed=true;this.record('note','The streamer completed their task',s.scene.name+': completion confirmed by the streamer.','streamer',now);
+    } else if(c.type==='startMoment'){
       if(s.lounge.break.status!=='idle'||s.round.status==='playing'||s.round.status==='paused')throw new Error('End the current activity before starting another moment.');
       this.dispatch({type:'publish',scene:c.scene},now);
       // A playable moment must remain visible after leaving a full-screen lounge.
@@ -113,7 +119,7 @@ export class ForgeEngine {
     } else if(c.type==='start') {
       if(s.lounge.break.status!=='idle')throw new Error('Welcome back first, then start a new round.');
       if(s.round.status==='playing'||s.round.status==='paused')throw new Error('A round is already in progress.');
-      s.round={...idle(s.scene.duration),status:'playing',deadline:now+s.scene.duration*1000};this.participants.clear();this.cooldown.clear();
+      s.taskConfirmed=false;s.round={...idle(s.scene.duration),status:'playing',deadline:now+s.scene.duration*1000};this.participants.clear();this.cooldown.clear();
       this.record('game','The community took the controls',`${s.scene.name}: ${s.scene.goal} team actions before the timer ends. Type ${s.scene.kind==='garden'?'!water':'!shield'} in chat.`,'streamer',now);
     } else if(c.type==='pause' && s.round.status==='playing'){s.round.remaining=Math.max(0,s.round.deadline-now);s.round.status='paused';
     } else if(c.type==='resume' && s.round.status==='paused'){
@@ -155,7 +161,7 @@ export class ForgeEngine {
       if(k)s.events=s.events.filter(e=>!(e.type==='community'&&e.title==='A little kindness made it on screen'&&e.detail===`${k.user}: ${k.text}`));
       s.lounge.wall=s.lounge.wall.filter(k=>k.id!==c.id);
     } else if(c.type==='resetVibes'){s.lounge.vibeVotes=[0,0,0,0];this.moodVotes.clear();
-    } else if(c.type==='reset'){this.state=initialState();this.participants.clear();this.cooldown.clear();this.votes.clear();this.seen.clear();this.encouragementCooldown.clear();this.moodVotes.clear();}
+    } else if(c.type==='reset'){const garden=s.garden;this.state=initialState();this.state.garden=garden;this.participants.clear();this.cooldown.clear();this.votes.clear();this.seen.clear();this.encouragementCooldown.clear();this.moodVotes.clear();}
     return this.changed();
   }
   private heat(now:number,source:TimelineEvent['source']){
@@ -187,10 +193,12 @@ export class ForgeEngine {
     }
     const kindness=clean.match(/^!kind\s+(.{3,160})$/i)?.[1];
     if(kindness&&s.lounge.pending.length<12&&!s.lounge.pending.some(k=>k.user===who))s.lounge.pending.push({id:messageId,user:who,text:kindness,at:now,source});
-    if(s.round.status==='playing'&&now<s.round.deadline&&['!shield','!water','!cheer'].includes(command)){
+    const plant=command.match(/^!plant (mint|moon|sunset)$/)?.[1] as 'mint'|'moon'|'sunset'|undefined;
+    if(s.round.status==='playing'&&now<s.round.deadline&&(['!shield','!water','!cheer'].includes(command)||(s.scene.kind==='garden'&&plant))){
       if(now-(this.cooldown.get(user)??-Infinity)>=3000){
         this.cooldown.set(user,now);this.participants.add(user);s.round.actions++;s.round.shields=Math.min(s.scene.goal,s.round.actions);s.round.participants=this.participants.size;s.stats.actions++;
-        if(s.round.shields>=s.scene.goal)this.end(now);
+        if(s.scene.kind==='garden'){const garden=source==='twitch'?s.garden:s.demoGarden;garden.water=Math.min(100000000,garden.water+1);if(garden.water%5===0){garden.blooms=[...garden.blooms,plant??'mint'].slice(-24);this.record('community',source==='twitch'?'Your lasting garden grew a bloom':'The rehearsal garden grew a bloom',`Five contributions grew a ${plant??'mint'} flower. ${source==='twitch'?'It will be here next stream.':'Rehearsal stays separate from the live garden.'}`,source,now);}}
+        if(s.round.shields>=s.scene.goal&&s.scene.kind!=='focus')this.end(now);
       }
     }
     if(clean.toLowerCase().split(/\W+/).includes(s.scene.keyword.toLowerCase()))this.heat(now,source);
@@ -213,7 +221,8 @@ export class ForgeEngine {
   private end(now:number){
     const s=this.state;if(s.round.status==='ended')return;
     const saved=s.round.shields>=s.scene.goal;s.round.status='ended';s.round.remaining=0;s.round.outcome=saved?'saved':'lost';s.stats.rounds++;
-    this.record('game',saved?(s.scene.kind==='garden'?'The chaos garden bloomed':'Chat saved the moon!'):'The moon took a hit',`${s.round.participants} participants contributed ${s.round.actions} actions. ${saved?'The community earned a survivor star.':'A cracked moon remains. There is always another round.'}`, 'streamer',now);
+    const title=s.scene.kind==='garden'?(saved?'The chaos garden bloomed':'A little garden progress, kept') :s.scene.kind==='focus'?'The focus sprint ended':saved?'Chat saved the moon!':'The moon took a hit';
+    this.record('game',title,`${s.round.participants} participants contributed ${s.round.actions} actions. ${s.scene.kind==='focus'?(s.taskConfirmed?'The streamer confirmed their task was completed.':'Task completion has not been confirmed by the streamer.'):s.scene.kind==='garden'?'Your contributions remain in the garden.':saved?'The community earned a survivor star.':'A cracked moon remains. There is always another round.'}`, 'streamer',now);
   }
   tick(now=Date.now()){
     let changed=false;

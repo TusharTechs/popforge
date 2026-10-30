@@ -37,4 +37,10 @@
 - A visual source reported as connected can be a preview browser tab. OBS capture, broadcast visibility, and audible routing still need checking inside OBS.
 - Compact controls are a local `/dock` page intended for an OBS Custom Browser Dock. Actual OBS installation and dock testing remain outstanding; browser controls have been exercised.
 - Gentle moments lower the goal to five contributions; they do not infer audience size, adapt difficulty automatically, or identify silent viewers.
-- The onboarding and live-control work does not include a public SaaS backend, a persistent community-world mechanic, external creator pilots, moderator accounts, or remote Relay hosting.
+- The onboarding and live-control work does not include a public SaaS backend, a café simulation, external creator pilots, moderator accounts, or remote Relay hosting.
+
+## Community memory update
+
+The lasting garden now implements one persistent community creation: live garden contributions and up to 24 flower colors survive snapshots and fresh sessions. Browser rehearsal has a separate garden. This is not the proposed café simulation or a hosted multi-streamer world. The previous note listing persistent world mechanics as entirely absent is superseded by this limited garden implementation. Actual OBS capture, real OAuth restart verification, remote Relay, independent pilots, and public service hosting remain outstanding until separately exercised.
+
+A real runtime SDK request was attempted with the existing ChatGPT login. It failed because the configured gpt-6.1-sol model was rejected for that account. Recipe generation remains working. Configure an available CODEX_MODEL before recording runtime generation as successful.
