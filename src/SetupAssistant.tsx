@@ -1,14 +1,123 @@
-import {useState} from 'react';
-import {Download,Check,Monitor,ClipboardCheck} from 'lucide-react';
-import type {Connection} from './client';
-import {createObsCollection} from '../shared/obs';
-export function SetupAssistant({connection,openDeveloper,copy}:{connection:Connection;openDeveloper:()=>void;copy:(text:string,label?:string)=>Promise<void>}){
- const [message,setMessage]=useState('');const local=connection.mode==='server';
- const download=()=>{try{if(!local)throw new Error('Run the local companion first.');const file=createObsCollection(location.origin,connection.overlayToken);const url=URL.createObjectURL(new Blob([JSON.stringify(file,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='PopForge-starter.obs.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setMessage('Collection downloaded. In OBS use Scene Collection → Import, select this file, then switch to PopForge starter.');}catch(e){setMessage(e instanceof Error?e.message:'Could not create the collection.');}};
- return <section className="panel setup-assistant"><header><span className="eyebrow">FEWER THINGS TO COPY</span><h2>Your stream, in three small steps.</h2><p>Viewers stay on Twitch. This assistant prepares your local sources and shows what has actually connected.</p></header><ol>
- <li><span>{connection.twitch.listening?<Check size={17}/>:1}</span><div><h3>Connect your broadcaster account</h3><p>{connection.twitch.listening?`Listening to ${connection.twitch.name}’s chat.`:local?'Configure your Twitch application once, then authorize the broadcaster.':'You’re trying the public browser preview. Live setup runs in the local companion.'}</p><button className="button secondary small" onClick={openDeveloper}>{local?'Configuration instructions':'How live setup works'}</button></div></li>
- <li><span><Monitor size={17}/></span><div><h3>Import your OBS starter scene</h3><p>Downloads a separate collection with the 1920 × 1080 visual source and an audio source positioned outside the video canvas. Your current collection stays available.</p>{local&&<p className="setup-fine"><strong>Sources connect to {location.origin}</strong> · keep this companion running. A collection from another port will not follow this studio.</p>}<button className="button primary small" disabled={!local} onClick={download}><Download size={14}/>Download OBS collection</button><p className="setup-fine">Import through OBS’s Scene Collection menu. Start sound with the audio source’s Interact window. Collections do not change your output resolution or configure an OBS dock. This file contains private read-only source links; keep it off public repositories.</p>{message&&<p role="status">{message}</p>}</div></li>
- <li><span>{connection.twitch.lastMessageAt?<Check size={17}/>:3}</span><div><h3>Say hello and check the result</h3><p>{connection.twitch.lastMessageAt?'A real Twitch message arrived. Confirm the visible reaction and sound in OBS.':'Ask a second account to send !heart, then verify the source in OBS. Source presence alone does not prove recording or broadcasting.'}</p><button className="button secondary small" onClick={()=>void copy('Send !heart in the broadcaster’s Twitch chat.','Chat check copied.')}>Copy the chat check</button></div></li></ol>
- <footer><ClipboardCheck size={17}/><div><strong>Rehearse the first-use experience</strong><p>A timed, local checklist helps you record confusion and assistance honestly.</p></div><a className="button secondary small" href="/pilot" target="_blank" rel="noreferrer">Open guided rehearsal</a></footer>
- </section>;
+import { useState } from 'react';
+import { Download, Check, Monitor, ClipboardCheck } from 'lucide-react';
+import type { Connection } from './client';
+import { createObsCollection } from '../shared/obs';
+export function SetupAssistant({
+  connection,
+  openDeveloper,
+  copy,
+}: {
+  connection: Connection;
+  openDeveloper: () => void;
+  copy: (text: string, label?: string) => Promise<void>;
+}) {
+  const [message, setMessage] = useState('');
+  const local = connection.mode === 'server';
+  const download = () => {
+    try {
+      if (!local) throw new Error('Run the local companion first.');
+      const file = createObsCollection(location.origin, connection.overlayToken);
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' }),
+      );
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'PopForge-starter.obs.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setMessage(
+        'Collection downloaded. In OBS use Scene Collection → Import, select this file, then switch to PopForge starter.',
+      );
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : 'Could not create the collection.');
+    }
+  };
+  return (
+    <section className="panel setup-assistant">
+      <header>
+        <span className="eyebrow">FEWER THINGS TO COPY</span>
+        <h2>Your stream, in three small steps.</h2>
+        <p>
+          Viewers stay on Twitch. This assistant prepares your local sources and shows what has
+          actually connected.
+        </p>
+      </header>
+      <ol>
+        <li>
+          <span>{connection.twitch.listening ? <Check size={17} /> : 1}</span>
+          <div>
+            <h3>Connect your broadcaster account</h3>
+            <p>
+              {connection.twitch.listening
+                ? `Listening to ${connection.twitch.name}’s chat.`
+                : local
+                  ? 'Configure your Twitch application once, then authorize the broadcaster.'
+                  : 'You’re trying the public browser preview. Live setup runs in the local companion.'}
+            </p>
+            <button className="button secondary small" onClick={openDeveloper}>
+              {local ? 'Configuration instructions' : 'How live setup works'}
+            </button>
+          </div>
+        </li>
+        <li>
+          <span>
+            <Monitor size={17} />
+          </span>
+          <div>
+            <h3>Import your OBS starter scene</h3>
+            <p>
+              Downloads a separate collection with the 1920 × 1080 visual source and an audio source
+              positioned outside the video canvas. Your current collection stays available.
+            </p>
+            {local && (
+              <p className="setup-fine">
+                <strong>Sources connect to {location.origin}</strong> · keep this companion running.
+                A collection from another port will not follow this studio.
+              </p>
+            )}
+            <button className="button primary small" disabled={!local} onClick={download}>
+              <Download size={14} />
+              Download OBS collection
+            </button>
+            <p className="setup-fine">
+              Import through OBS’s Scene Collection menu. Start sound with the audio source’s
+              Interact window. Collections do not change your output resolution or configure an OBS
+              dock. This file contains private read-only source links; keep it off public
+              repositories.
+            </p>
+            {message && <p role="status">{message}</p>}
+          </div>
+        </li>
+        <li>
+          <span>{connection.twitch.lastMessageAt ? <Check size={17} /> : 3}</span>
+          <div>
+            <h3>Say hello and check the result</h3>
+            <p>
+              {connection.twitch.lastMessageAt
+                ? 'A real Twitch message arrived. Confirm the visible reaction and sound in OBS.'
+                : 'Ask a second account to send !heart, then verify the source in OBS. Source presence alone does not prove recording or broadcasting.'}
+            </p>
+            <button
+              className="button secondary small"
+              onClick={() =>
+                void copy('Send !heart in the broadcaster’s Twitch chat.', 'Chat check copied.')
+              }
+            >
+              Copy the chat check
+            </button>
+          </div>
+        </li>
+      </ol>
+      <footer>
+        <ClipboardCheck size={17} />
+        <div>
+          <strong>Rehearse the first-use experience</strong>
+          <p>A timed, local checklist helps you record confusion and assistance honestly.</p>
+        </div>
+        <a className="button secondary small" href="/pilot" target="_blank" rel="noreferrer">
+          Open guided rehearsal
+        </a>
+      </footer>
+    </section>
+  );
 }

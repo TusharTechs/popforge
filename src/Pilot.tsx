@@ -1,20 +1,227 @@
-import {useEffect,useState} from 'react';
-import {ArrowLeft,Download,Check,ClipboardCheck} from 'lucide-react';
-import {PILOT_TASKS,PilotSchema,startPilot,completePilotTask,pilotReport,type Pilot as PilotState} from '../shared/pilot';
-import {StudioSelect} from './StudioSelect';
-import {StudioTheme} from './StudioTheme';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Download, Check, ClipboardCheck } from 'lucide-react';
+import {
+  PILOT_TASKS,
+  PilotSchema,
+  startPilot,
+  completePilotTask,
+  pilotReport,
+  type Pilot as PilotState,
+} from '../shared/pilot';
+import { StudioSelect } from './StudioSelect';
+import { StudioTheme } from './StudioTheme';
 import './pilot.css';
-export function Pilot(){
- const [pilot,setPilot]=useState<PilotState|null>(()=>{try{return PilotSchema.parse(JSON.parse(localStorage.getItem('popforge.pilot')??'null'));}catch{return null;}});const [mode,setMode]=useState<PilotState['mode']>('self-rehearsal');const [environment,setEnvironment]=useState<PilotState['environment']>('browser-preview');const [note,setNote]=useState('');const [clock,setClock]=useState(Date.now());const [error,setError]=useState('');
- useEffect(()=>{const timer=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(timer);},[]);
- useEffect(()=>{try{if(pilot)localStorage.setItem('popforge.pilot',JSON.stringify(pilot));}catch{setError('This browser could not save the observation. Export before closing.');}},[pilot]);
- const current=pilot?.tasks.findIndex(t=>t.outcome==='pending')??-1;const task=current>=0?pilot!.tasks[current]:null;
- const finish=(outcome:'done'|'help'|'stopped')=>{try{setPilot(completePilotTask(pilot!,outcome,note));setNote('');setError('');}catch{setError('Could not record the task. Check the browser clock.');}};
- const download=()=>{if(!pilot)return;const data={...pilot,feedback:pilot.feedback};const url=URL.createObjectURL(new Blob([JSON.stringify(pilotReport(data),null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='popforge-'+pilot.mode+'-'+pilot.id.slice(0,8)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
- return <main className="pilot-page"><div hidden><StudioTheme/></div><a href="/" className="pilot-back"><ArrowLeft size={15}/>Back to PopForge</a><span className="eyebrow">OBSERVE FIRST. IMPROVE WHAT MATTERS.</span><h1>A small rehearsal.<br/>An honest next step.</h1><p className="pilot-intro">Record how setup and participation feel. Your notes stay in this browser until you choose to export them. No account, contact details, or background analytics are collected.</p>
- {!pilot?<section className="panel pilot-start"><h2>Choose the kind of observation</h2><label>Who is testing?<StudioSelect value={mode} onChange={e=>setMode(e.target.value as typeof mode)}><option value="self-rehearsal">My own rehearsal</option><option value="independent-creator">An independent creator</option></StudioSelect></label><label>Where?<StudioSelect value={environment} onChange={e=>setEnvironment(e.target.value as typeof environment)}><option value="browser-preview">Browser preview</option><option value="live-companion">Live Twitch / OBS companion</option></StudioSelect></label><p>Start when you are ready. The clock includes reading and idle time. Self rehearsal will always be labeled separately from independent creator evidence.</p><button className="button primary" onClick={()=>setPilot(startPilot(mode,environment))}><ClipboardCheck size={16}/>Start the observation</button></section>:
- <><div className="pilot-summary"><span>{pilot.mode==='self-rehearsal'?'SELF REHEARSAL':'INDEPENDENT CREATOR · OBSERVER REPORTED'}</span><span>{pilot.environment==='browser-preview'?'Browser preview':'Live companion'}</span><span>{pilot.tasks.filter(t=>t.outcome!=='pending').length}/4 tasks recorded</span></div>
- {task?<section className="panel pilot-task"><span className="eyebrow">TASK {current+1} OF 4 · {Math.max(0,Math.floor((clock-task.startedAt!)/1000))}s ELAPSED</span><h2>{PILOT_TASKS[current].title}</h2><p>{PILOT_TASKS[current].prompt}</p><a className="button secondary small" href="/" target="_blank" rel="noreferrer">Open the studio in another tab</a><label htmlFor="pilot-note">What was confusing? What help was needed?</label><textarea id="pilot-note" maxLength={600} value={note} onChange={e=>setNote(e.target.value)} placeholder="Describe what you actually observed; avoid account names or private information."/><div className="pilot-actions"><button className="button primary" onClick={()=>finish('done')}><Check size={14}/>Completed without help</button><button className="button secondary" onClick={()=>finish('help')}>Completed with help</button><button className="button secondary" onClick={()=>finish('stopped')}>Could not complete</button></div><p className="pilot-fine">These buttons record your report; they do not automatically verify a Twitch connection or completed game.</p></section>:<section className="panel pilot-task"><h2>Your observation is ready.</h2><p>{pilot.mode==='self-rehearsal'?'This is a self rehearsal, not independent pilot evidence.':'Record only observations made with the independent participant’s agreement.'} Export it and use the friction points to guide the next improvement.</p></section>}
- <section className="panel pilot-results"><h2>Observation log</h2><ol>{pilot.tasks.map((t,i)=><li key={t.id}><strong>{PILOT_TASKS[i].title}</strong><span>{({pending:'Not yet recorded',done:'Without help',help:'Needed help',stopped:'Could not complete'})[t.outcome]}</span>{t.note&&<p>{t.note}</p>}</li>)}</ol><label htmlFor="pilot-feedback">Would you use it again? What would you change?</label><textarea id="pilot-feedback" maxLength={1200} value={pilot.feedback} onChange={e=>setPilot({...pilot,feedback:e.target.value})}/><div className="pilot-actions"><button className="button primary" onClick={download}><Download size={15}/>Export observation JSON</button><button className="button secondary" onClick={()=>{setPilot(null);setNote('');localStorage.removeItem('popforge.pilot');}}>Start another observation</button></div><p className="pilot-fine">Export before starting another. No result is sent to PopForge automatically. A report does not establish retention or growth.</p></section></>}{error&&<p role="alert">{error}</p>}
- </main>;
+export function Pilot() {
+  const [pilot, setPilot] = useState<PilotState | null>(() => {
+    try {
+      return PilotSchema.parse(JSON.parse(localStorage.getItem('popforge.pilot') ?? 'null'));
+    } catch {
+      return null;
+    }
+  });
+  const [mode, setMode] = useState<PilotState['mode']>('self-rehearsal');
+  const [environment, setEnvironment] = useState<PilotState['environment']>('browser-preview');
+  const [note, setNote] = useState('');
+  const [clock, setClock] = useState(Date.now());
+  const [error, setError] = useState('');
+  useEffect(() => {
+    const timer = setInterval(() => setClock(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    try {
+      if (pilot) localStorage.setItem('popforge.pilot', JSON.stringify(pilot));
+    } catch {
+      setError('This browser could not save the observation. Export before closing.');
+    }
+  }, [pilot]);
+  const current = pilot?.tasks.findIndex((t) => t.outcome === 'pending') ?? -1;
+  const task = current >= 0 ? pilot!.tasks[current] : null;
+  const finish = (outcome: 'done' | 'help' | 'stopped') => {
+    try {
+      setPilot(completePilotTask(pilot!, outcome, note));
+      setNote('');
+      setError('');
+    } catch {
+      setError('Could not record the task. Check the browser clock.');
+    }
+  };
+  const download = () => {
+    if (!pilot) return;
+    const data = { ...pilot, feedback: pilot.feedback };
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(pilotReport(data), null, 2)], { type: 'application/json' }),
+    );
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'popforge-' + pilot.mode + '-' + pilot.id.slice(0, 8) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  return (
+    <main className="pilot-page">
+      <div hidden>
+        <StudioTheme />
+      </div>
+      <a href="/" className="pilot-back">
+        <ArrowLeft size={15} />
+        Back to PopForge
+      </a>
+      <span className="eyebrow">OBSERVE FIRST. IMPROVE WHAT MATTERS.</span>
+      <h1>
+        A small rehearsal.
+        <br />
+        An honest next step.
+      </h1>
+      <p className="pilot-intro">
+        Record how setup and participation feel. Your notes stay in this browser until you choose to
+        export them. No account, contact details, or background analytics are collected.
+      </p>
+      {!pilot ? (
+        <section className="panel pilot-start">
+          <h2>Choose the kind of observation</h2>
+          <label>
+            Who is testing?
+            <StudioSelect value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
+              <option value="self-rehearsal">My own rehearsal</option>
+              <option value="independent-creator">An independent creator</option>
+            </StudioSelect>
+          </label>
+          <label>
+            Where?
+            <StudioSelect
+              value={environment}
+              onChange={(e) => setEnvironment(e.target.value as typeof environment)}
+            >
+              <option value="browser-preview">Browser preview</option>
+              <option value="live-companion">Live Twitch / OBS companion</option>
+            </StudioSelect>
+          </label>
+          <p>
+            Start when you are ready. The clock includes reading and idle time. Self rehearsal will
+            always be labeled separately from independent creator evidence.
+          </p>
+          <button
+            className="button primary"
+            onClick={() => setPilot(startPilot(mode, environment))}
+          >
+            <ClipboardCheck size={16} />
+            Start the observation
+          </button>
+        </section>
+      ) : (
+        <>
+          <div className="pilot-summary">
+            <span>
+              {pilot.mode === 'self-rehearsal'
+                ? 'SELF REHEARSAL'
+                : 'INDEPENDENT CREATOR · OBSERVER REPORTED'}
+            </span>
+            <span>
+              {pilot.environment === 'browser-preview' ? 'Browser preview' : 'Live companion'}
+            </span>
+            <span>
+              {pilot.tasks.filter((t) => t.outcome !== 'pending').length}/4 tasks recorded
+            </span>
+          </div>
+          {task ? (
+            <section className="panel pilot-task">
+              <span className="eyebrow">
+                TASK {current + 1} OF 4 ·{' '}
+                {Math.max(0, Math.floor((clock - task.startedAt!) / 1000))}s ELAPSED
+              </span>
+              <h2>{PILOT_TASKS[current].title}</h2>
+              <p>{PILOT_TASKS[current].prompt}</p>
+              <a className="button secondary small" href="/" target="_blank" rel="noreferrer">
+                Open the studio in another tab
+              </a>
+              <label htmlFor="pilot-note">What was confusing? What help was needed?</label>
+              <textarea
+                id="pilot-note"
+                maxLength={600}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Describe what you actually observed; avoid account names or private information."
+              />
+              <div className="pilot-actions">
+                <button className="button primary" onClick={() => finish('done')}>
+                  <Check size={14} />
+                  Completed without help
+                </button>
+                <button className="button secondary" onClick={() => finish('help')}>
+                  Completed with help
+                </button>
+                <button className="button secondary" onClick={() => finish('stopped')}>
+                  Could not complete
+                </button>
+              </div>
+              <p className="pilot-fine">
+                These buttons record your report; they do not automatically verify a Twitch
+                connection or completed game.
+              </p>
+            </section>
+          ) : (
+            <section className="panel pilot-task">
+              <h2>Your observation is ready.</h2>
+              <p>
+                {pilot.mode === 'self-rehearsal'
+                  ? 'This is a self rehearsal, not independent pilot evidence.'
+                  : 'Record only observations made with the independent participant’s agreement.'}{' '}
+                Export it and use the friction points to guide the next improvement.
+              </p>
+            </section>
+          )}
+          <section className="panel pilot-results">
+            <h2>Observation log</h2>
+            <ol>
+              {pilot.tasks.map((t, i) => (
+                <li key={t.id}>
+                  <strong>{PILOT_TASKS[i].title}</strong>
+                  <span>
+                    {
+                      {
+                        pending: 'Not yet recorded',
+                        done: 'Without help',
+                        help: 'Needed help',
+                        stopped: 'Could not complete',
+                      }[t.outcome]
+                    }
+                  </span>
+                  {t.note && <p>{t.note}</p>}
+                </li>
+              ))}
+            </ol>
+            <label htmlFor="pilot-feedback">Would you use it again? What would you change?</label>
+            <textarea
+              id="pilot-feedback"
+              maxLength={1200}
+              value={pilot.feedback}
+              onChange={(e) => setPilot({ ...pilot, feedback: e.target.value })}
+            />
+            <div className="pilot-actions">
+              <button className="button primary" onClick={download}>
+                <Download size={15} />
+                Export observation JSON
+              </button>
+              <button
+                className="button secondary"
+                onClick={() => {
+                  setPilot(null);
+                  setNote('');
+                  localStorage.removeItem('popforge.pilot');
+                }}
+              >
+                Start another observation
+              </button>
+            </div>
+            <p className="pilot-fine">
+              Export before starting another. No result is sent to PopForge automatically. A report
+              does not establish retention or growth.
+            </p>
+          </section>
+        </>
+      )}
+      {error && <p role="alert">{error}</p>}
+    </main>
+  );
 }

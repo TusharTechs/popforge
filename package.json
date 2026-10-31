@@ -10,7 +10,10 @@
     "start": "NODE_ENV=production tsx server/index.ts",
     "test": "tsx --test tests/*.test.ts",
     "verify:local": "node scripts/verify-local.mjs",
-    "rehearse:transport": "node scripts/rehearse-transport.mjs"
+    "rehearse:transport": "node scripts/rehearse-transport.mjs",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@openai/codex-sdk": "^0.149.0",
@@ -32,6 +35,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "prettier": "3.6.2",
     "tsx": "^4.20.0",
     "typescript": "~5.9.2",
     "vite": "^7.1.0"

@@ -1,6 +1,83 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="theme-color" content="#243b30"/><meta name="description" content="PopForge turns your chat's wild ideas into playable stream moments. Create together. Play together. Keep the lore."/><title>PopForge · The community co-creation studio</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/><link rel="stylesheet" href="/startup.css"/><script>
-try { var studioTheme=localStorage.getItem('popforge.studio.theme'); document.documentElement.dataset.studioTheme=['forest','plum','ocean','charcoal'].includes(studioTheme)?studioTheme:'forest'; } catch {}
-if(['/overlay','/sound','/recap','/relay-overlay','/relay-join'].includes(location.pathname.replace(/\/$/,'')))document.documentElement.dataset.popforgeSource='true';
-setTimeout(function(){var screen=document.querySelector('.popforge-startup');if(screen){screen.classList.add('startup-slow');screen.setAttribute('aria-busy','false');var message=document.getElementById('startup-message');if(message)message.textContent='Taking a little longer to open. Check your connection.';}},15000);
-</script></head><body><div id="root"><div class="popforge-startup" role="status" aria-live="polite" aria-busy="true"><div class="startup-universe" aria-hidden="true"><div class="startup-halo"></div><div class="startup-orbit orbit-near"><i></i></div><div class="startup-orbit orbit-far"><i></i></div><div class="startup-orbit orbit-tilted"><i></i></div><span class="startup-spark spark-a">✦</span><span class="startup-spark spark-b">✧</span><span class="startup-spark spark-c">·</span><div class="startup-mark"><svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h8l-1 8 11-12h-8l1-8Z"/></svg></div></div><div class="startup-wordmark" aria-hidden="true">popforge<span>.</span></div><p id="startup-message">Making room for your community</p><span class="startup-caption">A little spark. Something shared.</span><div class="startup-progress" aria-hidden="true"><i></i></div><a class="startup-retry" href="/">Try opening PopForge again</a></div></div><noscript><style>.popforge-startup{display:none}</style><p>Enable JavaScript to open PopForge’s interactive studio.</p></noscript><script type="module" src="/src/main.tsx"></script></body></html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#243b30" />
+    <meta
+      name="description"
+      content="PopForge turns your chat's wild ideas into playable stream moments. Create together. Play together. Keep the lore."
+    />
+    <title>PopForge · The community co-creation studio</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/startup.css" />
+    <script>
+      try {
+        var studioTheme = localStorage.getItem('popforge.studio.theme');
+        document.documentElement.dataset.studioTheme = [
+          'forest',
+          'plum',
+          'ocean',
+          'charcoal',
+        ].includes(studioTheme)
+          ? studioTheme
+          : 'forest';
+      } catch {}
+      if (
+        ['/overlay', '/sound', '/recap', '/relay-overlay', '/relay-join'].includes(
+          location.pathname.replace(/\/$/, ''),
+        )
+      )
+        document.documentElement.dataset.popforgeSource = 'true';
+      setTimeout(function () {
+        var screen = document.querySelector('.popforge-startup');
+        if (screen) {
+          screen.classList.add('startup-slow');
+          screen.setAttribute('aria-busy', 'false');
+          var message = document.getElementById('startup-message');
+          if (message)
+            message.textContent = 'Taking a little longer to open. Check your connection.';
+        }
+      }, 15000);
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <div class="popforge-startup" role="status" aria-live="polite" aria-busy="true">
+        <div class="startup-universe" aria-hidden="true">
+          <div class="startup-halo"></div>
+          <div class="startup-orbit orbit-near"><i></i></div>
+          <div class="startup-orbit orbit-far"><i></i></div>
+          <div class="startup-orbit orbit-tilted"><i></i></div>
+          <span class="startup-spark spark-a">✦</span><span class="startup-spark spark-b">✧</span
+          ><span class="startup-spark spark-c">·</span>
+          <div class="startup-mark">
+            <svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13 2 3 14h8l-1 8 11-12h-8l1-8Z" />
+            </svg>
+          </div>
+        </div>
+        <div class="startup-wordmark" aria-hidden="true">popforge<span>.</span></div>
+        <p id="startup-message">Making room for your community</p>
+        <span class="startup-caption">A little spark. Something shared.</span>
+        <div class="startup-progress" aria-hidden="true"><i></i></div>
+        <a class="startup-retry" href="/">Try opening PopForge again</a>
+      </div>
+    </div>
+    <noscript
+      ><style>
+        .popforge-startup {
+          display: none;
+        }
+      </style>
+      <p>Enable JavaScript to open PopForge’s interactive studio.</p></noscript
+    >
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

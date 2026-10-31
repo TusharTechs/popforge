@@ -1,6 +1,50 @@
-import {useState} from 'react';
-const items=[['obs-video','OBS recording shows a real chat contribution changing the overlay'],['obs-audio','OBS recording includes the intended music and audio levels'],['restart','Twitch reconnects after restarting the companion'],['source','The existing OBS source reconnects without replacing its link'],['recap','A separate chatter receives an accurate !recap reply'],['generation','A Codex scene was previewed and published successfully']];
-export function VerificationChecklist(){
- const [checked,setChecked]=useState<Record<string,boolean>>(()=>{try{return JSON.parse(localStorage.getItem('popforge.verification')??'{}')??{};}catch{return {};}});
- return <details className="panel verification-checklist"><summary>Live rehearsal checklist · {items.filter(([id])=>checked[id]).length}/{items.length} personally checked</summary><p>Mark these only after watching the result. These notes are saved in this browser and are self-reported, rather than automatic verification.</p>{items.map(([id,label])=><label key={id}><input type="checkbox" checked={checked[id]===true} onChange={e=>{const next={...checked,[id]:e.target.checked};setChecked(next);try{localStorage.setItem('popforge.verification',JSON.stringify(next));}catch{}}}/>{label}</label>)}<p>Keep test recordings and setup notes with your submission evidence. A connected preview tab alone does not verify OBS capture.</p></details>;
+import { useState } from 'react';
+const items = [
+  ['obs-video', 'OBS recording shows a real chat contribution changing the overlay'],
+  ['obs-audio', 'OBS recording includes the intended music and audio levels'],
+  ['restart', 'Twitch reconnects after restarting the companion'],
+  ['source', 'The existing OBS source reconnects without replacing its link'],
+  ['recap', 'A separate chatter receives an accurate !recap reply'],
+  ['generation', 'A Codex scene was previewed and published successfully'],
+];
+export function VerificationChecklist() {
+  const [checked, setChecked] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('popforge.verification') ?? '{}') ?? {};
+    } catch {
+      return {};
+    }
+  });
+  return (
+    <details className="panel verification-checklist">
+      <summary>
+        Live rehearsal checklist · {items.filter(([id]) => checked[id]).length}/{items.length}{' '}
+        personally checked
+      </summary>
+      <p>
+        Mark these only after watching the result. These notes are saved in this browser and are
+        self-reported, rather than automatic verification.
+      </p>
+      {items.map(([id, label]) => (
+        <label key={id}>
+          <input
+            type="checkbox"
+            checked={checked[id] === true}
+            onChange={(e) => {
+              const next = { ...checked, [id]: e.target.checked };
+              setChecked(next);
+              try {
+                localStorage.setItem('popforge.verification', JSON.stringify(next));
+              } catch {}
+            }}
+          />
+          {label}
+        </label>
+      ))}
+      <p>
+        Keep test recordings and setup notes with your submission evidence. A connected preview tab
+        alone does not verify OBS capture.
+      </p>
+    </details>
+  );
 }
