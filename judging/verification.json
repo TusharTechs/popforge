@@ -3,7 +3,7 @@
   "runtime_source_baseline": "3931270409a1604ada432d851154d14fe80500c3",
   "runtime_code_changed_by_documentation_review": true,
   "tests": {
-    "passed": 50,
+    "passed": 51,
     "failed": 0,
     "skipped": 0
   },
@@ -71,7 +71,7 @@
     ],
     "new_obs_recording": false,
     "approximate_minified_js_kb": {
-      "application": 204,
+      "application": 211,
       "vendor": 373
     },
     "public_preview_http_check": {
@@ -83,13 +83,47 @@
     }
   },
   "community_world_update": {
-    "tests": 50,
+    "tests": 51,
     "world_browser_reload": "passed",
-    "real_twitch_world_choice": "not yet exercised",
+    "real_twitch_world_choice": "passed: second-account !grow nook, creator approval, OBS reveal, Twitch recap, restart retention",
     "private_recovery_process_test": "passed",
     "obs_starter_import": "rendered; visual=1 audio=1; isolated port 14321; no broadcast or recording",
     "guided_observation": "tooling QA only; no completed independent pilot",
     "transport_report": "judging/transport-rehearsal.json",
     "recovery_limits": "bounded IDs/maps; abrupt crash can lose pending 100ms Twitch/timer batch"
+  },
+  "viewer_cue_update": {
+    "scope": [
+      "OBS choice commands, counts and countdown",
+      "pending creator approval and twelve-second build reveal",
+      "compact dock world controls",
+      "visible companion origin in setup"
+    ],
+    "isolated_obs_build_reveal": "visually inspected; synthetic demo contributions only",
+    "real_companion_sources": {
+      "visual": 1,
+      "audio": 1
+    },
+    "fresh_real_world_loop": "passed owner rehearsal; see judging/real-world-rehearsal.json",
+    "tests": 51,
+    "production_build": "passed"
+  },
+  "care_animation_update": {
+    "tests": 51,
+    "accepted_live_commands": [
+      "!water",
+      "!plant moon"
+    ],
+    "visual_verification": "actual OBS recording frames inspected",
+    "care_cue_bounds": {
+      "stored": 12,
+      "rendered": 3,
+      "duration_seconds": 4.5
+    },
+    "quiet_reduced_motion": "static highlight implemented; live capture used normal motion",
+    "world_recording_seconds": 174.933333,
+    "broadcasting_started": false,
+    "recordings_stopped": true,
+    "independent_pilot": false
   }
 }

@@ -27,3 +27,5 @@
 @media(prefers-reduced-motion:reduce){.moment-choices button{transition:none}.moment-choices button:hover{transform:none}}
 
 .preview-sample{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}.preview-sample p{margin:5px 0 0;font-size:11px;line-height:1.7}
+
+.single-chatter-guide{margin:14px 0;padding:12px 14px;border:1px solid #b8d0b533;border-radius:12px}.single-chatter-guide summary{cursor:pointer;font-size:13px;font-weight:600}.single-chatter-guide p{font-size:12px;line-height:1.8;overflow-wrap:anywhere}.single-chatter-guide code{white-space:nowrap}

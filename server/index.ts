@@ -32,7 +32,7 @@ if(saved.round.status==='playing'||saved.round.status==='paused')saved.round={..
 if(saved.poll?.status==='open')saved.poll={...saved.poll,status:'closed',winner:null};
 // Mood-vote identity ledgers are private/in-memory, so reopen suggestions fresh.
 if(!recovered)saved.lounge.vibeVotes=[0,0,0,0];
-saved.lounge.effects=[];
+saved.lounge.effects=[];saved.garden.care=[];saved.demoGarden.care=[];
 if(saved.lounge.break.status==='running')saved.lounge.break.status='resting';
 const engine=new ForgeEngine(saved,recovered?.recovery);
 const io=new Server(http,{serveClient:false,maxHttpBufferSize:16000,allowRequest:(req,cb)=>cb(null,!req.headers.origin||allowedOrigins.has(req.headers.origin))});

@@ -85,6 +85,39 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     ctx.fillStyle='#e7eddb';ctx.font='600 12px sans-serif';ctx.fillText(kind==='reactor'?`${data.charge}% charged`:`${data.round.shields||0} / ${data.scene.goal} contributions`,112,386);
     ctx.restore();ctx.strokeStyle=accent+'30';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(74,104,812,330,30);ctx.stroke();
   }
+  function gardenCare(memory:any){
+    const motion=!data.settings?.reducedMotion&&!stopped&&data.lounge?.energy!=='quiet';
+    const effects=(memory.care??[]).filter((e:any)=>Date.now()>=e.at&&Date.now()-e.at<4500).slice(-3);
+    const water=effects.filter((e:any)=>e.kind==='water').at(-1);
+    // The mug travels, tips, and returns. It never increments progress on its own.
+    let mx=801,my=334,tilt=0;
+    if(water&&motion){const age=(Date.now()-water.at)/1000;const travel=Math.min(1,age/.65,Math.max(0,(4.5-age)/.7));const ease=travel*travel*(3-2*travel);const px=490+(water.plot%12)*23,py=328+(water.plot<12?0:35);mx+=(px+75-mx)*ease;my+=(py-87-my)*ease;tilt=-.85*ease;}
+    ctx.save();ctx.translate(mx,my);ctx.rotate(tilt);
+    ctx.strokeStyle='#b38360';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(20,3,10,12,0,0,Math.PI*2);ctx.stroke();
+    roundRect(-17,-14,35,37,8,'#d29c76');roundRect(-14,-11,29,5,3,'#f6dcaf');
+    ctx.fillStyle='#f7e5c1';ctx.font='600 13px sans-serif';ctx.textAlign='center';ctx.fillText('♥',0,12);ctx.restore();
+    for(const e of effects){
+      const age=(Date.now()-e.at)/1000;const p=age/4.5,fade=Math.min(1,age*4,(4.5-age)*2);const px=490+(e.plot%12)*23,py=328+(e.plot<12?0:35);
+      const color=e.kind==='moon'?'#bca5ed':e.kind==='sunset'?'#e9a075':e.kind==='water'?'#6bbfc4':'#8db988';
+      ctx.save();ctx.globalAlpha=Math.max(0,fade);
+      const halo=ctx.createRadialGradient(px,py-5,1,px,py-5,32);halo.addColorStop(0,color+'66');halo.addColorStop(1,color+'00');ctx.fillStyle=halo;ctx.fillRect(px-32,py-37,64,64);
+      if(!motion||(data.lounge?.particles===false&&e.kind==='cheer')){dot(px,py-13,5,color);ctx.restore();continue;}
+      if(e.kind==='water'&&e===water&&age>.6&&age<3.8){
+        const lipX=mx-21,lipY=my+5;
+        if(data.lounge?.particles!==false){for(let i=0;i<11;i++){const q=((age*1.5+i/11)%1);const x=lipX+(px-lipX)*q,y=lipY+(py-lipY)*q*q;ctx.fillStyle='#9ad9db';ctx.beginPath();ctx.ellipse(x,y,1.7,3.4,-.35,0,Math.PI*2);ctx.fill();}}
+        for(let i=0;i<3;i++)ellipse(px,py,5+((age*14+i*7)%25),2+((age*4+i*2)%8),0,'#e5f3db88');
+      }else if(e.kind==='mint'||e.kind==='moon'||e.kind==='sunset'){
+        const fall=Math.min(1,age/.8);dot(px,py-95+95*fall*fall,3.5,color);
+        if(age>.8){const grow=Math.min(1,(age-.8)/1.2);ctx.strokeStyle='#537c50';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(px,py);ctx.quadraticCurveTo(px+5,py-12*grow,px,py-27*grow);ctx.stroke();ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(px-5,py-16*grow,8*grow,3.5*grow,.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(px+5,py-23*grow,8*grow,3.5*grow,-.5,0,Math.PI*2);ctx.fill();}
+        if(e.kind==='moon')ellipse(px,py-44,13,13,-.2,'#d8c4ff99');
+        if(e.kind==='sunset'){const warmth=ctx.createRadialGradient(px,py-25,1,px,py-25,45);warmth.addColorStop(0,'#ffd39255');warmth.addColorStop(1,'#ffd39200');ctx.fillStyle=warmth;ctx.fillRect(px-45,py-70,90,90);}
+      }else if(e.kind==='cheer'){
+        for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const r=12+p*30;dot(px+Math.cos(a)*r,py-18+Math.sin(a)*r-p*12,2.5,'#ffdf9c');}
+      }
+      ctx.restore();
+    }
+    ctx.textAlign='left';
+  }
   function gardenWorld(){
     const memory=(data.rehearsal?data.demoGarden:data.garden)??{water:0,blooms:[]};
     const blooms=memory.blooms??[];const drops=(memory.water??0)%5;
@@ -127,10 +160,10 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     for(let row=0;row<2;row++){roundRect(478,321+row*35,286,19,7,'#665440');ctx.fillStyle='#8b795b';for(let i=0;i<22;i++)dot(486+i*12,327+row*35+(i%2)*3,.9,'#a0916d');}
     const n=Math.min(24,blooms.length);
     for(let i=0;i<n;i++){
-      const row=i<12?0:1;const col=i%12;const x=490+col*23,y=328+row*35,h=23+(i%3)*6;
+      const row=i<12?0:1;const col=i%12;const fresh=memory.care?.at(-1);const age=fresh?(Date.now()-fresh.at)/1000:10;const grow=fresh&&memory.water%5===0&&i===n-1&&!data.settings?.reducedMotion&&!stopped&&data.lounge?.energy!=='quiet'?Math.min(1,Math.max(.12,age/1.5)):1;const x=490+col*23,y=328+row*35,h=(23+(i%3)*6)*grow;
       ctx.strokeStyle='#496f4a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+Math.sin(t*.5+i)*2,y-h/2,x,y-h);ctx.stroke();leaf(x+4,y-9,6,-.5,'#6e945e');
       const color=({mint:'#b0e1b6',moon:'#c7a9ec',sunset:'#efb28d'} as Record<string,string>)[blooms[i]]??accent;
-      for(let k=0;k<5;k++){const a=k*Math.PI*2/5;dot(x+Math.cos(a)*5,y-h+Math.sin(a)*5,4,color);}dot(x,y-h,2.5,'#ffe3a6');
+      for(let k=0;k<5;k++){const a=k*Math.PI*2/5;dot(x+Math.cos(a)*5*grow,y-h+Math.sin(a)*5*grow,4*grow,color);}dot(x,y-h,2.5,'#ffe3a6');
     }
     if(!n){ctx.textAlign='center';ctx.fillStyle='#375744';ctx.font='600 12px sans-serif';roundRect(534,281,171,24,12,'#edf1dfe8');ctx.fillStyle='#375744';ctx.fillText('Your first bloom starts here',620,297);ctx.textAlign='left';}
     // Community decisions become persistent, visible places, never decorative votes.
@@ -147,12 +180,60 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     if(landmarks.includes('lanterns')){
       for(let i=0;i<4;i++){const x=445+i*12,y=335+i*17;ctx.strokeStyle='#54725b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y+23);ctx.lineTo(x,y-7);ctx.lineTo(x+10,y-7);ctx.stroke();const light=ctx.createRadialGradient(x+10,y,1,x+10,y,19);light.addColorStop(0,'#ffdda375');light.addColorStop(1,'#ffdda300');ctx.fillStyle=light;ctx.fillRect(x-9,y-19,38,38);roundRect(x+5,y-5,10,13,3,'#ffebaf');}
     }
-    // Copper watering can and a short garden path anchor the scene.
-    roundRect(790,326,30,29,7,'#b48662');ctx.strokeStyle='#a77b59';ctx.lineWidth=4;ctx.beginPath();ctx.arc(820,338,11,-Math.PI/2,Math.PI/2);ctx.stroke();ctx.beginPath();ctx.moveTo(791,337);ctx.lineTo(775,326);ctx.lineTo(770,330);ctx.stroke();
+    // A real accepted care event brings the mug and planting bed to life.
+    gardenCare(memory);
     for(let i=0;i<3;i++){ctx.fillStyle='#dedfc4';ctx.beginPath();ctx.ellipse(624+i*7,402+i*11,20+i*4,4+i,0,0,Math.PI*2);ctx.fill();}
     for(let i=0;i<8;i++){const x=439+(i*57)%401,y=252+(i*31)%148+Math.sin(t*.45+i)*3;dot(x,y,1.4,'#fff4c7b0');}
     ctx.restore();ctx.restore();
     ctx.strokeStyle='#b9ccb4';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(74,104,812,330,30);ctx.stroke();
+  }
+  // A viewer can understand and join a world choice without opening the studio.
+  // Kept inside the trusted renderer so private iframe and OBS use identical copy.
+  function worldInvitation(){
+    const memory=data.rehearsal?data.demoGarden:data.garden;const d=memory?.decision;
+    if(!d)return;
+    const names:Record<string,string>={pond:'Moonpond',nook:'Reading nook',lanterns:'Lantern walk'};
+    const chapter=memory.chapters?.find((c:any)=>c.id===d.id);
+    const age=chapter?(Date.now()-chapter.at)/1000:Infinity;
+    const reveal=d.status==='built'&&age>=0&&age<12;
+    if(d.status!=='open'&&d.status!=='closed'&&!reveal)return;
+    if(d.status==='closed'&&!d.winner&&Date.now()>d.endsAt+12000)return;
+    const waiting=d.status==='closed'&&d.winner;
+    const x=96,y=120,w=322,h=d.status==='open'?294:238;
+    ctx.save();ctx.shadowColor='#10251e40';ctx.shadowBlur=20;
+    roundRect(x,y,w,h,22,'#183b30');ctx.shadowBlur=0;
+    ctx.strokeStyle='#d5e6b94d';ctx.lineWidth=1;ctx.stroke();ctx.textAlign='left';
+    ctx.fillStyle='#c4dfa5';ctx.font='600 9px sans-serif';
+    ctx.fillText(data.rehearsal?'BROWSER REHEARSAL · CHAT BUILDS HERE':'OUR COMMUNITY WORLD',x+20,y+26);
+    ctx.fillStyle='#f2f0dc';ctx.font='600 23px sans-serif';
+    ctx.fillText(reveal?'Look what we made.':waiting?'Your choice is in.':d.status==='open'?'What grows here next?':'Our seed is still here.',x+20,y+60);
+    ctx.font='12px sans-serif';ctx.fillStyle='#c7d6c3';
+    if(d.status==='open'){
+      const left=Math.max(0,Math.ceil((d.endsAt-Date.now())/1000));
+      ctx.fillText(left?`${left}s to choose · type one command in chat`:'Choices closed · waiting for the result',x+20,y+84);
+      const total=d.counts.reduce((sum:number,n:number)=>sum+n,0);
+      d.options.forEach((id:string,i:number)=>{
+        const row=y+101+i*47;roundRect(x+14,row,w-28,42,10,'#ffffff0b');
+        const share=total?d.counts[i]/total:0;
+        if(share>0)roundRect(x+14,row,Math.max(8,(w-28)*share),42,10,'#cce79b19');
+        ctx.fillStyle='#f2f0dc';ctx.font='600 12px sans-serif';ctx.fillText(names[id]??id,x+25,row+16);
+        ctx.fillStyle='#cce79b';ctx.font='12px monospace';ctx.fillText('!grow '+id,x+25,row+33);
+        ctx.textAlign='right';ctx.font='600 14px monospace';ctx.fillText(String(d.counts[i]),x+w-27,row+26);ctx.textAlign='left';
+      });
+      ctx.fillStyle='#b9cbb7';ctx.font='10px sans-serif';ctx.fillText('One account, one choice. You can change it.',x+20,y+263);
+      ctx.fillText('Creator approves the build. Ties spend nothing.',x+20,y+279);
+    }else if(waiting||reveal){
+      ctx.fillStyle='#d9ecb1';ctx.font='600 28px sans-serif';ctx.fillText(names[d.winner]??'A new place',x+20,y+111);
+      ctx.fillStyle='#c7d6c3';ctx.font='12px sans-serif';
+      ctx.fillText(reveal?'One earned seed. A place to come back to.':'Waiting for the creator to approve this build.',x+20,y+142);
+      ctx.fillText(reveal?(data.rehearsal?'Rehearsal place · live garden stays separate.':'Built together. Here for the next stream too.'):'Your seed stays safe until then.',x+20,y+164);
+      ctx.fillStyle='#cce79b';ctx.font='600 11px monospace';ctx.fillText('NEW HERE?  !recap',x+20,y+211);
+    }else{
+      ctx.fillText(d.reason==='tie'?'The community choice tied.':d.reason==='recovery'?'This choice was safely interrupted.':'No choices arrived this time.',x+20,y+106);
+      ctx.fillText('No seed was spent. We can choose again.',x+20,y+132);
+      ctx.fillStyle='#cce79b';ctx.font='600 11px monospace';ctx.fillText('STAY A WHILE.  !heart',x+20,y+192);
+    }
+    ctx.restore();
   }
   function reactionBursts(){
     const l=data.lounge;if(!l||l.energy==='quiet'||!l.particles||l.intensity<=0)return;
@@ -188,7 +269,7 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     const accent=colors[scene.accent]||colors.lime;
     const active=round.status==='playing';const percent=Math.min(1,(round.shields||0)/scene.goal);
     if(atmospheric){
-      ambientWorld();reactionBursts();ctx.restore();requestAnimationFrame(frame);return;
+      ambientWorld();reactionBursts();worldInvitation();ctx.restore();requestAnimationFrame(frame);return;
     }
     if(!data.transparent){
       const bg=ctx.createRadialGradient(480,270,20,480,270,580);bg.addColorStop(0,scene.kind==='garden'?'#38584a':'#273d3f');bg.addColorStop(1,scene.kind==='garden'?'#243e34':'#1d3031');ctx.fillStyle=bg;ctx.fillRect(0,0,960,540);
@@ -258,7 +339,7 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     }else if(round.status==='ended'){
       ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 20px sans-serif';ctx.fillText(round.outcome==='saved'?'A little chaos. A community victory.':scene.kind==='garden'?'A little progress stays with us.':scene.kind==='focus'?'Sprint ended. Take a breath.':'One cracked moon. One very good story.',480,468);
     }
-    reactionBursts();ctx.textAlign='left';ctx.restore();requestAnimationFrame(frame);
+    reactionBursts();worldInvitation();ctx.textAlign='left';ctx.restore();requestAnimationFrame(frame);
   }
   if(!canvasOverride)addEventListener('message',e=>{
     if(e.source!==parent)return;

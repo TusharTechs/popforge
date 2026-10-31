@@ -142,7 +142,7 @@ The sound route has opt-in browser playback. Procedural synth and original WAV m
 | `src/StartupScreen.tsx`, `public/startup.css` | Accessible actual-startup animation |
 | `src/Relay.tsx`, `src/relay-load.worker.ts` | Creator Relay UI and explicitly internal simulation |
 | `scripts/verify-local.mjs` | Secret-free readiness report without sending chat or invoking generation |
-| `tests/` | 50 engine, lifecycle, persistence, API, and authorization regression tests |
+| `tests/` | 51 engine, lifecycle, persistence, API, and authorization regression tests |
 
 See [known limitations](../KNOWN_LIMITATIONS.md) for unverified deployment and scale behavior.
 
@@ -163,3 +163,9 @@ The free vote uses a private account-to-choice ledger scoped to decision ID. Bro
 The runtime checkpoint uses SHA-256 over the raw payload, schema validation, owner-only permissions, fsync, and atomic rename. It migrates the legacy state file only when no canonical checkpoint exists. Corrupt data stops startup without overwriting the file. Private ledgers retain at most 20,000 event IDs and 50,000 entries per bounded map. Control/demo requests checkpoint before successful acknowledgment. Twitch and timer state checkpoint at the 100 ms notification boundary, retrying dirty data every two seconds after errors; abrupt crashes can lose pending changes. Storage health is visible in the controls. This is one local process per data directory, not a distributed exactly-once journal.
 
 The browser rehearsal uses a versioned state/recovery envelope and migrates the previous state-only record. It never receives live private ledgers. Browser storage is editable by its user and is not a security boundary.
+
+## Viewer-facing world cues
+
+The same trusted Canvas renderer draws world-choice commands, current counts, and the authoritative deadline in private previews and OBS. The cue appears over either the current scene or an optional lounge background. A closed winner remains explicitly pending creator approval; a completed build reveals its name for twelve seconds using the stored chapter time. Old build celebrations do not replay on a later reload. Tied/empty/interrupted choices do not show an earned landmark. No generated executable code, third-party music, or new external service is introduced. The compact `/dock` reuses the same creator open/close/build commands.
+
+Accepted garden contributions append a schema-validated care cue to the matching live/rehearsal garden: event ID, timestamp, bounded plot index and one of water/mint/moon/sunset/cheer. Raw chat does not directly trigger animations. The renderer limits simultaneous care cues to three and rejects future/older-than-4.5-second cues; startup clears transient care arrays while retaining the persistent garden. Quiet/reduced motion uses a static cue and particle-off suppresses droplets/sparkles. The moving mug, seed sprouts, and earned bloom growth are trusted Canvas code.

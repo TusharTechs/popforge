@@ -1,0 +1,168 @@
+{
+  "at": "2026-10-31T08:27:27.112Z",
+  "kind": "Owner rehearsal with real Twitch chat",
+  "channel": "techtushstreams",
+  "sourcePresence": {
+    "visual": 1,
+    "audio": 1
+  },
+  "water": 5,
+  "blooms": [
+    "mint"
+  ],
+  "landmarks": [
+    "nook"
+  ],
+  "chapters": [
+    {
+      "id": "929ed115-877d-46a0-aa88-dd22a1c36535",
+      "at": 1793435233469,
+      "landmark": "nook",
+      "votes": 1
+    }
+  ],
+  "decision": {
+    "id": "929ed115-877d-46a0-aa88-dd22a1c36535",
+    "endsAt": 1793435213049,
+    "status": "built",
+    "options": [
+      "pond",
+      "nook",
+      "lanterns"
+    ],
+    "counts": [
+      0,
+      1,
+      0
+    ],
+    "winner": "nook",
+    "reason": null
+  },
+  "messages": [
+    {
+      "user": "popforgeontwitch",
+      "text": "!water",
+      "at": 1793434901330
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!water",
+      "at": 1793434953724
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!water",
+      "at": 1793434985091
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!water",
+      "at": 1793435029281
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!water",
+      "at": 1793435066990
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!plant sunset",
+      "at": 1793435076077
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!plant mint",
+      "at": 1793435091809
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!plant moon",
+      "at": 1793435097881
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!cheer",
+      "at": 1793435099616
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!grow nook",
+      "at": 1793435200653
+    }
+  ],
+  "recap": {
+    "moments": [
+      {
+        "id": "2717e449-ce8b-45e0-adf0-bf04d9ef93a5",
+        "at": 1793435168049,
+        "type": "community",
+        "title": "Chat is choosing the garden’s next corner",
+        "detail": "Use !grow pond, !grow nook, !grow lanterns. One choice per account; changes allowed. The creator approves the build.",
+        "source": "twitch"
+      },
+      {
+        "id": "59afea9b-3d40-46fa-8d14-48bf6cdbca94",
+        "at": 1793435213143,
+        "type": "community",
+        "title": "Chat chose Reading nook",
+        "detail": "The creator can now build this corner. One garden seed will be used.",
+        "source": "twitch"
+      },
+      {
+        "id": "94996e82-cff9-4ee6-91bd-b5f2b9156661",
+        "at": 1793435233469,
+        "type": "community",
+        "title": "Reading nook became part of our garden",
+        "detail": "1 community choice. One seed became a place to come back to. It stays across fresh sessions.",
+        "source": "twitch"
+      }
+    ],
+    "world": [
+      "Reading nook"
+    ],
+    "action": "Suggest our next scene with !forge followed by your idea in Twitch chat.",
+    "goal": "The next chapter is yours to help create."
+  },
+  "limits": [
+    "Owner rehearsal, not independent pilot",
+    "Source presence is not broadcasting",
+    "No new audio playback verification claimed",
+    "Recording does not capture the Twitch chat UI"
+  ],
+  "restart": {
+    "landmarks": [
+      "nook"
+    ],
+    "water": 7,
+    "hostListening": true,
+    "sources": {
+      "visual": 1,
+      "audio": 1
+    },
+    "storageHealthy": true
+  },
+  "chatRecapReply": "Chat is choosing the garden’s next corner · Chat chose Reading nook · Reading nook became part of our garden Our garden keeps Reading nook. Suggest our next scene with !forge followed by your idea in Twitch chat.",
+  "animationCommands": [
+    {
+      "user": "popforgeontwitch",
+      "text": "!water",
+      "at": 1793435482578
+    },
+    {
+      "user": "popforgeontwitch",
+      "text": "!plant moon",
+      "at": 1793435490748
+    }
+  ],
+  "observedAnimationFrames": {
+    "watering": "popforge-water-animation-frame.png",
+    "moonPlant": "popforge-plant-animation-frame.png"
+  },
+  "worldRecording": {
+    "durationSeconds": 174.933333,
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "streamStarted": false
+  }
+}

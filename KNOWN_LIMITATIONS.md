@@ -60,3 +60,9 @@ The canonical `.data/runtime.json` checkpoint contains state and private ledgers
 The OBS starter collection was imported and rendered in OBS 33 on this Mac; both picture and sound sockets connected. This check used an isolated companion with Twitch disabled and did not prove a fresh live chat event, enabled audio playback, recording, or broadcasting. The export includes read-only bearer URLs and must stay private.
 
 The `/pilot` observer report records manual outcomes and time including idle/reading. Identity and success are not independently verified. The owner chose self-rehearsal first; no completed independent creator pilot is claimed.
+
+## Real-world follow-up and care animations
+
+Real second-account `!grow nook`, creator build approval, the resulting OBS place, and a Twitch `!recap` reply mentioning Reading nook have now passed owner rehearsal. The place and OAuth listening restored after restart. This supersedes earlier notes that the world choice had only automated/browser coverage. It does not establish independent usefulness, retention, or remote Relay.
+
+Care animation cues are bounded at 12 stored events with only three rendered at once. They last 4.5 seconds, derive only from accepted garden contributions, and clear on companion startup. Reduced motion/quiet uses static highlighting. Water and moon planting were visually captured from real Twitch; mint/sunset/cheer share the implementation but lack separate live visual capture. Cues are decorative feedback, never additional contributions or gameplay verification.

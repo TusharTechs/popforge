@@ -2,3 +2,5 @@
 @media(max-width:650px){.garden-world{padding:22px}.garden-world header{flex-direction:column;gap:12px}.world-options{grid-template-columns:1fr}.world-options article{position:relative;padding:18px 18px 18px 64px}.world-symbol{position:absolute;left:20px;top:21px;font-size:28px}.world-options article p{min-height:0}.world-history ol{flex-direction:column;gap:16px}}
 
 .garden-world:focus-visible{outline:2px solid #dce7b0;outline-offset:4px}.world-next{margin-top:20px;font-size:11px;white-space:normal;line-height:1.7}
+
+.world-compact{padding:16px}.world-compact>header{gap:12px}.world-compact>header h2{font-size:19px}.world-compact>header p{font-size:12px}.world-compact .world-decision{margin-top:12px;padding:14px}.world-compact .world-actions{flex-wrap:wrap}.world-compact .world-seeds{font-size:12px;white-space:nowrap}

@@ -29,3 +29,14 @@ test('a missing or inconsistent world ledger closes a choice without fabricating
  const e=new ForgeEngine();grow(e,'demo');e.dispatch({type:'openGardenVote',mode:'rehearsal'},20000);e.ingest('a','!grow pond','demo','vote',21000);
  const without=new ForgeEngine(restoreState(structuredClone(e.state)));assert.equal(without.state.demoGarden.decision!.reason,'recovery');assert.equal(without.state.demoGarden.decision!.winner,null);
 });
+
+test('garden care cues follow accepted contributions, not idle chat, duplicates, or cooldown violations',()=>{
+ const e=new ForgeEngine();e.ingest('a','!water','twitch','idle',1000);assert.equal(e.state.garden.care.length,0);
+ e.dispatch({type:'startMoment',scene:{...RECIPES[2].scene,goal:100}},2000);
+ e.ingest('a','!water','twitch','pour',2100);e.ingest('a','!water','twitch','pour',2200);e.ingest('a','!plant moon','twitch','too-soon',2300);
+ assert.equal(e.state.garden.water,1);assert.equal(e.state.garden.care.length,1);assert.equal(e.state.garden.care[0].kind,'water');
+ e.ingest('a','!plant moon','twitch','moon',5200);e.ingest('b','!plant sunset','demo','sunset',5300);
+ assert.equal(e.state.garden.care.at(-1)!.kind,'moon');assert.equal(e.state.demoGarden.care.at(-1)!.kind,'sunset');assert.equal(e.state.garden.water,2);
+ for(let i=0;i<20;i++)e.ingest('guest'+i,'!cheer','twitch','care'+i,5400+i*10);
+ assert.equal(e.state.garden.care.length,12);assert.ok(e.state.garden.care.every(c=>c.kind==='cheer'));assert.equal(e.state.garden.blooms.length,4,'visual cues do not create extra blooms');
+});

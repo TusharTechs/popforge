@@ -232,7 +232,7 @@ export class ForgeEngine {
     if(s.round.status==='playing'&&now<s.round.deadline&&(['!shield','!water','!cheer'].includes(command)||(s.scene.kind==='garden'&&plant))){
       if(now-(this.cooldown.get(user)??-Infinity)>=3000){
         this.cooldown.set(user,now);this.participants.add(user);s.round.actions++;s.round.shields=Math.min(s.scene.goal,s.round.actions);s.round.participants=this.participants.size;s.stats.actions++;
-        if(s.scene.kind==='garden'){const garden=source==='twitch'?s.garden:s.demoGarden;garden.water=Math.min(100000000,garden.water+1);if(garden.water%5===0){garden.blooms=[...garden.blooms,plant??'mint'].slice(-24);this.record('community',source==='twitch'?'Your lasting garden grew a bloom':'The rehearsal garden grew a bloom',`Five contributions grew a ${plant??'mint'} flower. ${source==='twitch'?'It will be here next stream.':'Rehearsal stays separate from the live garden.'}`,source,now);}}
+        if(s.scene.kind==='garden'){const garden=source==='twitch'?s.garden:s.demoGarden;garden.water=Math.min(100000000,garden.water+1);garden.care=[...(garden.care??[]).filter(e=>now-e.at<4500),{id:messageId,at:now,kind:plant??(command==='!water'?'water' as const:'cheer' as const),plot:Math.min(23,Math.floor((garden.water-1)/5))}].slice(-12);if(garden.water%5===0){garden.blooms=[...garden.blooms,plant??'mint'].slice(-24);this.record('community',source==='twitch'?'Your lasting garden grew a bloom':'The rehearsal garden grew a bloom',`Five contributions grew a ${plant??'mint'} flower. ${source==='twitch'?'It will be here next stream.':'Rehearsal stays separate from the live garden.'}`,source,now);}}
         if(s.round.shields>=s.scene.goal&&s.scene.kind!=='focus')this.end(now);
       }
     }
