@@ -10,9 +10,15 @@
 
 PopForge turns a streamer's queue, coffee break, or quiet moment into something the whole chat builds together: a playable scene in OBS, a community garden that keeps growing across streams, and a cozy room to come back to. Viewers just type in Twitch chat. The creator stays in OBS. Built with OpenAI Codex.
 
+<p align="center">
+  <a href="https://youtu.be/EC-2qP4WQxU"><img src="https://img.youtube.com/vi/EC-2qP4WQxU/maxresdefault.jpg" width="720" alt="Watch the PopForge demo on YouTube" /></a>
+  <br />
+  <sub>▶ Watch the 2:32 demo: real Twitch chat, a live stream, and Codex generating a scene mid-stream</sub>
+</p>
+
 | Link | What you'll find |
 | --- | --- |
-| Demo video | _YouTube link added at submission_ |
+| [Demo video (2:32)](https://youtu.be/EC-2qP4WQxU) | PopForge running on a live Twitch stream, plus how it was built with Codex |
 | [Hosted studio preview](https://popforge-studio.tusharaggarwal274.chatgpt.site/) | Try the studio in a browser, no install or account |
 | [Quick start](#quick-start) · [Live setup](docs/SETUP.md) | Run locally, connect Twitch, add PopForge to OBS |
 | [How Codex built it](docs/BUILT_WITH_CODEX.md) | Timeline of the Codex thread, plus Codex running inside the product |
