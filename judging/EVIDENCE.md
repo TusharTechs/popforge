@@ -1,6 +1,6 @@
 # PopForge evidence ledger
 
-Reviewed through **31 October 2026**. This ledger distinguishes observed behavior, automated checks, and work that has not been exercised. [README](../README.md) · [Architecture](../docs/ARCHITECTURE.md) · [Final review](FINAL_REVIEW.md)
+Reviewed through **31 October 2026**. This ledger distinguishes observed behavior, automated checks, and work that has not been exercised. [README](../README.md) · [Architecture](../docs/ARCHITECTURE.md)
 
 ## Automated verification
 
@@ -8,7 +8,7 @@ Reviewed through **31 October 2026**. This ledger distinguishes observed behavio
 | --- | --- | --- |
 | Test suite | **51 passed; 0 failed, skipped, or cancelled** | `npm test`; Node test runner through tsx |
 | Type checking and production build | **Passed** | `npm run build`; TypeScript + Vite |
-| Clean source installation | **Passed** | Fresh tracked-source archive, `npm ci`, build, and all 41 tests; no `.env` or `.data` copied |
+| Clean source installation | **Passed** | Fresh tracked-source archive, `npm ci`, build, and the full test suite; no `.env` or `.data` copied |
 | Dependency audit | **0 known vulnerabilities reported** | `npm audit` on the locked dependency set; time-specific registry advisory check, not a security certification |
 | Build performance note | **Earlier warning resolved** | Separate application (~211 KB) and vendor (~373 KB) minified chunks; no startup timing claim |
 
