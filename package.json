@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "start": "NODE_ENV=production tsx server/index.ts",
     "test": "tsx --test tests/*.test.ts",
-    "verify:local": "node scripts/verify-local.mjs"
+    "verify:local": "node scripts/verify-local.mjs",
+    "rehearse:transport": "node scripts/rehearse-transport.mjs"
   },
   "dependencies": {
     "@openai/codex-sdk": "^0.149.0",

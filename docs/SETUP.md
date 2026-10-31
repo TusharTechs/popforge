@@ -45,6 +45,10 @@ Host authorization and refreshed credentials are remembered in local encrypted i
 
 ## 3. Add OBS video, audio, and controls
 
+**Recommended:** open Connections → Setup assistant → Download OBS starter. In OBS’s macOS menu bar select **Scene Collection → Import**, choose `PopForge-starter.obs.json`, then select **PopForge starter** in Scene Collection. This creates separate **PopForge picture** and **PopForge sound** sources, with sound positioned outside the video canvas. It does not add microphone capture, change the output profile, add the control dock, or begin streaming. Keep this downloaded JSON private: it includes read-only source capabilities. Use the collection from the same companion origin you intend to run. A collection downloaded from a test port continues to point to that test port.
+
+The import was exercised with OBS 33.0.0 on the tested Mac; the rendered scene and both source connections were observed. Audio still requires the explicit gesture below. Manual setup remains available:
+
 Install [OBS Studio](https://obsproject.com/) for your platform. macOS Apple Silicon with OBS 33.0.0 is the actual tested combination.
 
 1. In PopForge choose **OBS source** and copy the visual URL. Add an OBS **Browser** source at **1920 × 1080**, paste the URL, and keep the companion running. The source is transparent unless the creator enables a lounge background.
@@ -110,3 +114,15 @@ A clean source archive was independently installed, built, and tested without `.
 | Relay guest cannot open invitation remotely | Current Relay is a same-computer prototype; localhost is not a public invitation endpoint |
 
 Keep `.data` and `.env` private. The identity key and ciphertext together grant access to remembered host credentials. See [privacy and implementation boundaries](ARCHITECTURE.md#local-request-boundary).
+
+## Guided rehearsal and transport checks
+
+Open `/pilot` on the studio or hosted preview. Choose self-rehearsal, complete four observed tasks, record help/confusion honestly, and export the local JSON report. Reported completion is not automatically checked; task timing includes reading and idle time. No contact data or background telemetry is collected. An independent pilot requires an actual independent participant, not changing the report label.
+
+For a reproducible isolated localhost transport rehearsal:
+
+```sh
+npm run rehearse:transport -- --events 500 --readers 20 --output /tmp/popforge-transport.json
+```
+
+The script starts its own temporary companion with Twitch and Codex disabled, sends synthetic demo actions, measures acknowledgments and reader convergence, then removes its state. It creates zero Twitch viewers. It does not measure Internet throughput or Twitch limits.

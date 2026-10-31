@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import {GardenSchema,emptyGarden,gardenSeeds,landmarkName,closeGardenDecision,LandmarkSchema,type GardenMemory,type Landmark} from './world.js';
+export type {GardenMemory} from './world.js';
 import {initialLounge,restoreLounge,MoodSchema,EnergySchema,EffectSchema,MOODS,type LoungeState,type EffectKind} from './lounge.js';
 
 export const SceneSchema = z.object({
@@ -29,12 +31,12 @@ export type TimelineEvent = { id: string; at: number; title: string; detail: str
 export type ChatMessage = { id:string; at:number; user:string; text:string; source:'demo'|'twitch' };
 export type Poll = { id:string; question:string; options:string[]; counts:number[]; endsAt:number; status:'open'|'closed'; winner:number|null };
 export type Round = { id:string; status:'idle'|'playing'|'paused'|'ended'; deadline:number; remaining:number; shields:number; actions:number; participants:number; outcome:'saved'|'lost'|null };
-const GardenSchema=z.object({water:z.number().int().min(0).max(100000000),blooms:z.array(z.enum(['mint','moon','sunset'])).max(24)});
-export type GardenMemory=z.infer<typeof GardenSchema>;
-const emptyGarden=():GardenMemory=>({water:0,blooms:[]});
 export type ForgeState = { garden:GardenMemory; demoGarden:GardenMemory; taskConfirmed:boolean; version:1; revision:number; scene:Scene; previous:Scene[]; charge:number; round:Round; poll:Poll|null; events:TimelineEvent[]; chat:ChatMessage[]; proposals:{id:string;user:string;text:string}[]; stats:{scenes:number;rounds:number;actions:number}; settings:{reducedMotion:boolean;compact:boolean}; lounge:LoungeState; };
 export const CommandSchema = z.discriminatedUnion('type', [
   z.object({type:z.literal('startMoment'),scene:SceneSchema}),
+  z.object({type:z.literal('openGardenVote'),mode:z.enum(['live','rehearsal'])}),
+  z.object({type:z.literal('closeGardenVote'),mode:z.enum(['live','rehearsal'])}),
+  z.object({type:z.literal('buildGardenChoice'),mode:z.enum(['live','rehearsal'])}),
   z.object({type:z.literal('endActivity')}),z.object({type:z.literal('confirmTask')}),
   z.object({type:z.literal('publish'),scene:SceneSchema}), z.object({type:z.literal('rollback')}),
   z.object({type:z.literal('start')}), z.object({type:z.literal('pause')}),z.object({type:z.literal('resume')}),z.object({type:z.literal('finish')}),
@@ -82,6 +84,9 @@ export function remix(prompt: string): Scene {
   return SceneSchema.parse(s);
 }
 
+export const EngineRecoverySchema=z.object({participants:z.array(z.string().max(100)).max(50000).default([]),cooldowns:z.array(z.tuple([z.string().max(100),z.number().finite()])).max(50000).default([]),pollVotes:z.array(z.tuple([z.string().max(100),z.number().int().min(0).max(2)])).max(50000).default([]),encouragement:z.array(z.tuple([z.string().max(100),z.number().finite()])).max(50000).default([]),moodVotes:z.array(z.tuple([z.string().max(100),z.number().int().min(0).max(3)])).max(50000).default([]),eventIds:z.array(z.string().min(1).max(200)).max(20000),gardenVotes:z.object({live:z.object({decisionId:z.string().max(100).nullable(),votes:z.array(z.tuple([z.string().max(100),LandmarkSchema])).max(50000)}),rehearsal:z.object({decisionId:z.string().max(100).nullable(),votes:z.array(z.tuple([z.string().max(100),LandmarkSchema])).max(50000)})})});
+export type EngineRecovery=z.infer<typeof EngineRecoverySchema>;
+
 export class ForgeEngine {
   state: ForgeState;
   private participants = new Set<string>();
@@ -91,14 +96,37 @@ export class ForgeEngine {
   private encouragementCooldown = new Map<string,number>();
   private moodVotes = new Map<string,number>();
   private effectBucket={at:0,count:0};
-  constructor(state=initialState()){this.state=state;}
+  private gardenVotes={live:new Map<string,Landmark>(),rehearsal:new Map<string,Landmark>()};
+  constructor(state=initialState(),recovery?:EngineRecovery){
+    this.state=state;const parsed=recovery?EngineRecoverySchema.parse(recovery):null;if(parsed){this.seen=new Set(parsed.eventIds);this.participants=new Set(parsed.participants);this.cooldown=new Map(parsed.cooldowns);this.votes=new Map(parsed.pollVotes);this.encouragementCooldown=new Map(parsed.encouragement);this.moodVotes=new Map(parsed.moodVotes);}
+    for(const mode of ['live','rehearsal'] as const){
+      const d=(mode==='live'?state.garden:state.demoGarden).decision;const ledger=parsed?.gardenVotes[mode];
+      if(d&&ledger&&d.id===ledger.decisionId){const votes=new Map(ledger.votes);const consistent=votes.size===ledger.votes.length&&[...votes.values()].every(x=>d!.options.includes(x))&&d.options.every((id,i)=>[...votes.values()].filter(x=>x===id).length===d.counts[i]);if(consistent){this.gardenVotes[mode]=votes;continue;}}
+      if(d?.status==='open'){d.status='closed';d.winner=null;d.reason='recovery';}
+    }
+  }
+  recovery():EngineRecovery{return {participants:[...this.participants].slice(-50000),cooldowns:[...this.cooldown].slice(-50000),pollVotes:[...this.votes].slice(-50000),encouragement:[...this.encouragementCooldown].slice(-50000),moodVotes:[...this.moodVotes].slice(-50000),eventIds:[...this.seen],gardenVotes:{live:{decisionId:this.state.garden.decision?.id??null,votes:[...this.gardenVotes.live]},rehearsal:{decisionId:this.state.demoGarden.decision?.id??null,votes:[...this.gardenVotes.rehearsal]}}};}
+  private closeWorld(mode:'live'|'rehearsal',now:number){const g=mode==='live'?this.state.garden:this.state.demoGarden;if(g.decision?.status!=='open')return;closeGardenDecision(g);const d=g.decision!;this.record('community',d.winner?`Chat chose ${landmarkName(d.winner)}`:d.reason==='tie'?'The garden choice ended in a tie':'The garden choice ended without votes',d.winner?'The creator can now build this corner. One garden seed will be used.':'No seed was spent. Open a fresh choice whenever you like.',mode==='live'?'twitch':'demo',now);}
+
   private record(type:TimelineEvent['type'],title:string,detail:string,source:TimelineEvent['source']='streamer',now=Date.now()) {
     this.state.events.unshift({id:uid(),at:now,type,title,detail,source});this.state.events=this.state.events.slice(0,80);
   }
   private changed(){this.state={...this.state,revision:this.state.revision+1};return this.state;}
   dispatch(input:unknown,now=Date.now()): ForgeState {
     const c=CommandSchema.parse(input);const s=this.state;
-    if(c.type==='confirmTask'){
+    if(c.type==='openGardenVote'){
+      const g=c.mode==='live'?s.garden:s.demoGarden;if(g.decision?.status==='open')throw new Error('A garden choice is already open.');
+      const options=LandmarkSchema.options.filter(id=>!g.landmarks.includes(id));if(!options.length)throw new Error('Every corner is built. Enjoy what you made together.');
+      if(gardenSeeds(g)<1)throw new Error('Grow one flower to earn a garden seed first.');
+      g.decision={id:uid(),endsAt:now+45000,status:'open',options:[...options],counts:options.map(()=>0),winner:null,reason:null};this.gardenVotes[c.mode].clear();
+      this.record('community',c.mode==='live'?'Chat is choosing the garden’s next corner':'A rehearsal garden choice opened','Use '+options.map(id=>'!grow '+id).join(', ')+'. One choice per account; changes allowed. The creator approves the build.',c.mode==='live'?'twitch':'demo',now);
+    } else if(c.type==='closeGardenVote'){this.closeWorld(c.mode,now);
+    } else if(c.type==='buildGardenChoice'){
+      const g=c.mode==='live'?s.garden:s.demoGarden;const d=g.decision;
+      if(!d||d.status!=='closed'||!d.winner||g.landmarks.includes(d.winner)||gardenSeeds(g)<1)throw new Error('Close a garden choice with a clear winner before building.');
+      const votes=d.counts.reduce((a,b)=>a+b,0);g.landmarks.push(d.winner);g.chapters=[{id:d.id,at:now,landmark:d.winner,votes},...g.chapters].slice(0,12);d.status='built';
+      this.record('community',`${c.mode==='rehearsal'?'Rehearsal: ':''}${landmarkName(d.winner)} became part of our garden`,`${votes} community ${votes===1?'choice':'choices'}. One seed became a place to come back to. ${c.mode==='live'?'It stays across fresh sessions.':'It stays across browser reloads; resetting the rehearsal clears it.'}`,c.mode==='live'?'twitch':'demo',now);
+    } else if(c.type==='confirmTask'){
       if(s.scene.kind!=='focus'||s.taskConfirmed||s.round.status==='idle')throw new Error('Start a focus sprint before confirming your task.');
       s.taskConfirmed=true;this.record('note','The streamer completed their task',s.scene.name+': completion confirmed by the streamer.','streamer',now);
     } else if(c.type==='startMoment'){
@@ -161,7 +189,7 @@ export class ForgeEngine {
       if(k)s.events=s.events.filter(e=>!(e.type==='community'&&e.title==='A little kindness made it on screen'&&e.detail===`${k.user}: ${k.text}`));
       s.lounge.wall=s.lounge.wall.filter(k=>k.id!==c.id);
     } else if(c.type==='resetVibes'){s.lounge.vibeVotes=[0,0,0,0];this.moodVotes.clear();
-    } else if(c.type==='reset'){const garden=s.garden;this.state=initialState();this.state.garden=garden;this.participants.clear();this.cooldown.clear();this.votes.clear();this.seen.clear();this.encouragementCooldown.clear();this.moodVotes.clear();}
+    } else if(c.type==='reset'){const garden=s.garden;this.state=initialState();this.state.garden=garden;this.participants.clear();this.cooldown.clear();this.votes.clear();this.gardenVotes.rehearsal.clear();this.encouragementCooldown.clear();this.moodVotes.clear();}
     return this.changed();
   }
   private heat(now:number,source:TimelineEvent['source']){
@@ -169,7 +197,7 @@ export class ForgeEngine {
     const s=this.state;const before=s.charge;s.charge=Math.min(100,s.charge+s.scene.increment);
     if(before<100&&s.charge===100){this.record('keyword','The reactor went critical',`The “${s.scene.keyword}” meter hit 100%. Meteor mode activated.` ,source,now);}
   }
-  ingest(user:string,text:string,source:'demo'|'twitch',messageId:string=uid(),now=Date.now(),displayName=user) {
+  ingest(user:string,text:string,source:'demo'|'twitch',messageId:string=uid(),now=Date.now(),displayName=user,isBroadcaster=false) {
     if(this.seen.has(messageId))return this.state;
     this.seen.add(messageId);if(this.seen.size>20000)this.seen.delete(this.seen.values().next().value!);
     const s=this.state;const clean=text.slice(0,500);const who=displayName.slice(0,40);
@@ -180,6 +208,13 @@ export class ForgeEngine {
       if(prev!==choice){if(prev!==undefined)s.poll.counts[prev]--;s.poll.counts[choice]++;this.votes.set(user,choice);}
     }
     const command=clean.trim().toLowerCase();
+    const growth=command.match(/^!grow (pond|nook|lanterns)$/)?.[1] as Landmark|undefined;
+    const mode=source==='twitch'?'live':'rehearsal';const garden=mode==='live'?s.garden:s.demoGarden;const decision=garden.decision;
+    if(growth&&!isBroadcaster&&decision?.status==='open'&&now<decision.endsAt&&decision.options.includes(growth)){
+      const ledger=this.gardenVotes[mode];const old=ledger.get(user);
+      if(old!==growth&&(old!==undefined||ledger.size<50000)){if(old!==undefined)decision.counts[decision.options.indexOf(old)]--;decision.counts[decision.options.indexOf(growth)]++;ledger.set(user,growth);}
+    }
+
     const vibe=command.match(/^!vibe\s+(starlight|rain|aurora|sunset)$/)?.[1];
     if(vibe){const choice=MOODS.findIndex(m=>m.id===vibe);const prior=this.moodVotes.get(user);if(prior!==choice){if(prior!==undefined)s.lounge.vibeVotes[prior]=Math.max(0,s.lounge.vibeVotes[prior]-1);s.lounge.vibeVotes[choice]++;this.moodVotes.set(user,choice);}}
     if(['!heart','!hug','!glow','!star','!hype'].includes(command)&&now-(this.encouragementCooldown.get(user)??-Infinity)>=4000){
@@ -226,6 +261,7 @@ export class ForgeEngine {
   }
   tick(now=Date.now()){
     let changed=false;
+    for(const mode of ['live','rehearsal'] as const){const g=mode==='live'?this.state.garden:this.state.demoGarden;if(g.decision?.status==='open'&&now>=g.decision.endsAt){this.closeWorld(mode,now);changed=true;}}
     if(this.state.lounge.break.status==='running'&&now>=this.state.lounge.break.deadline){this.state.lounge.break.status='resting';changed=true;}
     if(this.state.round.status==='playing'&&now>=this.state.round.deadline){this.end(now);changed=true;}
     if(this.state.poll?.status==='open'&&now>=this.state.poll.endsAt){this.closePoll(now);changed=true;}
@@ -233,8 +269,10 @@ export class ForgeEngine {
   }
 }
 
-export function recap(state:ForgeState,windowMs=15*60*1000,now=Date.now()){
+export function recap(state:ForgeState,windowMs=15*60*1000,now=Date.now(),rehearsal=false){
+  const garden=rehearsal?state.demoGarden:state.garden;
+  const world=garden.landmarks.map(landmarkName);
   const recent=state.events.filter(e=>e.at>=now-windowMs);
   const important=recent.filter(e=>e.type==='game'||e.type==='keyword'||e.type==='note'||e.type==='poll'||e.type==='scene'||e.type==='community').slice(0,3).reverse();
-  return {moments:important,action:state.lounge.break.status!=='idle'?'Type !glow or !heart in Twitch chat. Keep the room warm while the streamer takes a breather.':state.round.status==='playing'?`Type ${state.scene.kind==='garden'?'!water':'!shield'} in Twitch chat to help the team.`:state.poll?.status==='open'?'Type !vote 1, !vote 2, or !vote 3 in Twitch chat.':'Suggest our next scene with !forge followed by your idea in Twitch chat.',goal:state.lounge.break.status!=='idle'?`${state.lounge.lanterns} lanterns are keeping the lights on.`:state.round.status==='playing'?`${Math.max(0,state.scene.goal-state.round.shields)} more team actions to reach the goal.`:'The next chapter is yours to help create.'};
+  return {moments:important,world,action:garden.decision?.status==='open'?`Help choose our next garden corner: ${garden.decision.options.map(x=>'!grow '+x).join(', ')}.`:state.lounge.break.status!=='idle'?'Type !glow or !heart in Twitch chat. Keep the room warm while the streamer takes a breather.':state.round.status==='playing'?`Type ${state.scene.kind==='garden'?'!water':'!shield'} in Twitch chat to help the team.`:state.poll?.status==='open'?'Type !vote 1, !vote 2, or !vote 3 in Twitch chat.':'Suggest our next scene with !forge followed by your idea in Twitch chat.',goal:state.lounge.break.status!=='idle'?`${state.lounge.lanterns} lanterns are keeping the lights on.`:state.round.status==='playing'?`${Math.max(0,state.scene.goal-state.round.shields)} more team actions to reach the goal.`:'The next chapter is yours to help create.'};
 }

@@ -26,7 +26,7 @@ flowchart TB
       Preview["Sandboxed iframe: private candidate preview"]
       Overlay["OBS /overlay: trusted direct Canvas renderer"]
       Sound["OBS /sound: Web Audio + original WAV loops"]
-      Snapshot[(".data/state.json")]
+      Snapshot[(".data/runtime.json")]
       Identity[(".data/identity.enc + separate key")]
       Studio <--> Server
       Server <--> Engine
@@ -94,11 +94,11 @@ The real Twitch bridge uses broadcaster OAuth and `user:read:chat` / `user:write
 
 | Data | Storage | Restart behavior |
 | --- | --- | --- |
-| Scene, recent chat/events, garden, approved lounge state | Atomic `.data/state.json` snapshot | Restored, schema-bounded, recent history capped |
+| Scene, recent chat/events, garden, approved lounge state | Atomic `.data/runtime.json` snapshot | Restored, schema-bounded, recent history capped |
 | Host OAuth and source identity | AES-256-GCM `.data/identity.enc`; separate owner-only `.data/identity.key` | Host restore attempted; source token stays stable |
-| Private contribution/vote/dedupe ledgers | Process memory | Active rounds return to standby; open polls close; mood vote counts reset |
+| Private contribution/vote/dedupe ledgers | Same checksummed runtime checkpoint, never public snapshots | Active rounds stand by; ordinary polls close; consistent world votes and mood ledgers restore |
 | Relay guest OAuth, approvals, episode ledgers | Process memory | Fresh invitation and authorization required |
-| Browser-only rehearsal | localStorage + BroadcastChannel | Same-profile tabs only; no server/OBS authority |
+| Browser-only rehearsal | v2 state/recovery envelope in localStorage + BroadcastChannel | Same-profile tabs only; separate from live state; no server/OBS authority |
 | Theme, setup visibility, break nudges | Browser-local preferences | Private to that browser profile |
 
 Identity files use owner-only file permissions; the directory is owner-only. Someone controlling the same OS user can obtain both key and ciphertext. This is accidental-sharing protection, not protection against a compromised OS account. Disconnect removes saved host authorization locally without revoking Twitch consent. Graceful shutdown stops EventSub, Relay, Socket.io, HTTP, and the Vite development server.
@@ -120,6 +120,11 @@ The sound route has opt-in browser playback. Procedural synth and original WAV m
 | Module | Responsibility |
 | --- | --- |
 | `shared/engine.ts` | Scene schema, ten recipes, game engine, garden, polls, event-grounded recaps |
+| `shared/world.ts`, `src/GardenWorld.tsx` | Seed economy, bounded building votes, persistent landmarks and catch-up context |
+| `server/runtime-store.ts` | Owner-only atomic checksummed state and private recovery checkpoint |
+| `shared/obs.ts`, `src/SetupAssistant.tsx` | Source-separated OBS collection export and guided connection steps |
+| `shared/pilot.ts`, `src/Pilot.tsx` | Observer-reported timed rehearsal, local JSON export without background telemetry |
+| `scripts/rehearse-transport.mjs` | Isolated localhost HTTP/Socket.io convergence measurement |
 | `shared/lounge.ts` | Validated atmosphere, comfort, break, effects, and kindness state |
 | `shared/relay.ts` | Two-community normalized voting, consent, episode lifecycle, isolated load simulation |
 | `server/index.ts` | Express/Vite or production host, HTTP/session protections, Socket.io roles, snapshots, shutdown |
@@ -137,6 +142,24 @@ The sound route has opt-in browser playback. Procedural synth and original WAV m
 | `src/StartupScreen.tsx`, `public/startup.css` | Accessible actual-startup animation |
 | `src/Relay.tsx`, `src/relay-load.worker.ts` | Creator Relay UI and explicitly internal simulation |
 | `scripts/verify-local.mjs` | Secret-free readiness report without sending chat or invoking generation |
-| `tests/` | 41 engine, lifecycle, persistence, API, and authorization regression tests |
+| `tests/` | 50 engine, lifecycle, persistence, API, and authorization regression tests |
 
 See [known limitations](../KNOWN_LIMITATIONS.md) for unverified deployment and scale behavior.
+
+## Community-world lifecycle and recovery
+
+```mermaid
+stateDiagram-v2
+    [*] --> EarnSeed: five accepted garden contributions
+    EarnSeed --> OpenChoice: creator opens 45-second vote
+    OpenChoice --> Closed: deadline or creator closes
+    Closed --> EarnSeed: tie or no votes; no spend
+    Closed --> Built: clear winner plus creator approval
+    Built --> EarnSeed: place persists; another bloom earns next seed
+```
+
+The free vote uses a private account-to-choice ledger scoped to decision ID. Broadcaster votes are excluded. Votes change in place and counts must match the recovered ledger before an open decision resumes. Missing or inconsistent recovery closes the decision without a winner or seed spend. Three authored landmarks are rendered conditionally; the latest 12 building chapters appear in recap context. Live-world state survives fresh-session reset, while rehearsal reset clears its separate world.
+
+The runtime checkpoint uses SHA-256 over the raw payload, schema validation, owner-only permissions, fsync, and atomic rename. It migrates the legacy state file only when no canonical checkpoint exists. Corrupt data stops startup without overwriting the file. Private ledgers retain at most 20,000 event IDs and 50,000 entries per bounded map. Control/demo requests checkpoint before successful acknowledgment. Twitch and timer state checkpoint at the 100 ms notification boundary, retrying dirty data every two seconds after errors; abrupt crashes can lose pending changes. Storage health is visible in the controls. This is one local process per data directory, not a distributed exactly-once journal.
+
+The browser rehearsal uses a versioned state/recovery envelope and migrates the previous state-only record. It never receives live private ledgers. Browser storage is editable by its user and is not a security boundary.

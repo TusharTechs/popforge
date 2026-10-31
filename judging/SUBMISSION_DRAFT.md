@@ -51,3 +51,9 @@ Independent creator pilots, a secure public service with per-channel isolation, 
 ## Submission readiness
 
 See [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) for the complete outstanding requirements and required owner form answers. The repository remains private by the owner’s choice; the owner will arrange judge access. A PopForge project was not found in the connected Devpost account during the final review, and no submission is claimed. Public video, access, owner declarations, and final Submitted status still need completion.
+
+## 31 October implementation update for the final write-up
+
+The community can now build lasting places: garden contributions earn seeds, free chat choices select one of three authored landmarks, and the creator explicitly approves spending a seed. Places remain visible across fresh live sessions and appear in catch-up context. Private recovery ledgers checkpoint with state, and a downloadable OBS starter separates picture from sound. A guided local observation route supports honest self-rehearsals and later independent pilots.
+
+The suite now has 50 passing tests. An isolated 500-action/20-reader localhost transport rehearsal converged; it created zero Twitch viewers and establishes no production audience-size guarantee. The full service remains a local companion; the public Site is browser rehearsal only. Final real-world world-choice footage, independent pilots, and hosted multi-creator operations must not be represented as completed.

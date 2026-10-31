@@ -64,7 +64,7 @@ export class TwitchBridge {
         if(!current())return;
         const now=Date.now();this.status.lastMessageAt=now;
         this.onChat?.({userId:event.chatterId,text:event.messageText,messageId:event.messageId,at:now,isBroadcaster:event.chatterId===id});
-        this.engine.ingest(event.chatterId,event.messageText,'twitch',event.messageId,now,event.chatterDisplayName);
+        this.engine.ingest(event.chatterId,event.messageText,'twitch',event.messageId,now,event.chatterDisplayName,event.chatterId===id);
         const last=this.engine.state.chat.at(-1);if(last?.id===event.messageId)last.user=event.chatterDisplayName;
         if(event.messageText.trim().toLowerCase()==='!recap'&&now-this.lastRecap>30000){
           this.lastRecap=now;void api.chat.sendChatMessage(id,this.recapText().slice(0,450)).catch(()=>{if(current()){this.status.error='Could not send recap to chat. Check user:write:chat permission.';this.notify();}});

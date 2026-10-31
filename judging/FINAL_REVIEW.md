@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | Innovation/Idea | **3.5** | **3.5** | Streamer-approved scene creation, a lasting chat garden, catch-up context, and a cozy break workflow form a coherent combination. Chat games, overlays, recap tools, and co-creation already exist as categories; the combination has to earn its distinction in the working demo. Runtime output is intentionally bounded to four mechanics. |
 | Potential Impact | **4.0** | **3.5** | Staying in Twitch chat and using an OBS dock reduces context switching. A gentle moment can work for one chatter. Evidence proves participation, not retention, adoption, or creator growth. Manual developer-app setup remains friction for an ordinary creator. |
-| Technological implementation | **4.0** | **4.0** | Strong local vertical slice: real OAuth/EventSub, authoritative state, genuine Codex SDK generation, schema validation, reader/control separation, persistence, restart checks, 41 tests, clean install, and actual OBS capture. Hosted backend/tenant isolation, remote Relay, wider platform tests, and real crowd transport tests remain absent. |
+| Technological implementation | **4.0** | **4.0** | Strong local vertical slice: real OAuth/EventSub, authoritative state, genuine Codex SDK generation, schema validation, reader/control separation, persistence, restart checks, 50 tests, clean install, and actual OBS capture. Hosted backend/tenant isolation, remote Relay, wider platform tests, and real crowd transport tests remain absent. |
 | Design | **4.0** | **3.5** | Cozy original art, no-viewer-signup commands, quick starts, compact controls, keyboard-operable dropdowns, reduced motion, and restrained optional effects are strengths. The number of secondary features can blur the first-use story. Final listening and an independent setup observation would strengthen the evidence. |
 | **Total** | **15.5 / 20** | **14.5 / 20** | Approximately **3.9/5** and **3.6/5** overall. Estimates, not official predictions. |
 
@@ -28,7 +28,7 @@ The strongest story is: **“A creator takes a breather; chat builds something t
 4. **Balance the final soundtrack by listening.** The current measured audio signal is quiet. Final narration should be clear and music pleasant in the actual exported video.
 5. **Finish access and submission checks.** Private repo access, public/unlisted YouTube playback, actual Devpost Submitted status, and owner declarations have more immediate value than another feature.
 
-No new feature is necessary to tell the current working story truthfully. If time remains after recording, split optional feature code into separate bundles to address the approximately 541 KB main-chunk warning. This is a performance improvement, not a blocker for the successful local build.
+No new feature is necessary to tell the current working story truthfully. The previous main-chunk warning has been resolved through application/vendor separation; startup speed remains unbenchmarked.
 
 ## After the hackathon
 
@@ -57,3 +57,16 @@ These changes strengthen design and evaluation access. The original score estima
 | Design | The owner’s preferences and assistant checks are not independent usability evidence | Watch a new creator complete setup, start/stop a moment, and understand an empty/no-chat state without coaching; complete accessibility and narration/music listening checks |
 
 The next product investment should be setup and one distinctive community loop, with pilots guiding scope. Adding more generic presets alone is unlikely to establish stronger innovation. No numerical score increase or judging outcome is guaranteed by these changes.
+
+## Follow-up: 31 October implementation against the remaining opportunities
+
+The prior score table is historical. The following changes improve what can be demonstrated without claiming an independent panel reassessment:
+
+| Criterion | New concrete evidence | Remaining ceiling |
+| --- | --- | --- |
+| Innovation | Earned seeds, one-account community building choices, creator approval, persistent visible places and recap context form a consequential loop across broadcasts | Three authored landmarks; no claim of first-ever novelty. Capture a real Twitch choice and resulting OBS place |
+| Potential Impact | Downloadable OBS starter, remembered host authorization, guided connection steps, and an observer-report rehearsal reduce friction | Each creator still configures a developer app; no independent adoption, voluntary reuse, or retention evidence |
+| Technical implementation | Atomic state/recovery checkpoints, bounded replay protection, corruption handling, process recovery tests, 50 total tests, and real localhost transport convergence | No public tenant-isolated backend, remote Relay, Internet capacity proof, or unlimited exactly-once delivery |
+| Design | World-building card, clearer next action, setup assistant, separate OBS sources imported successfully, and guided self-rehearsal | Independent ease-of-use observation and final audio listening still needed |
+
+Prioritize the real garden → vote → creator build → OBS → recap sequence for the video. Do not add another generic feature to substitute for this evidence. The owner chose self-rehearsal before external pilots; guided-report tooling is ready, but the assistant has not recorded a completed independent study or self-reported the owner’s subjective feedback. See [production gates](../docs/PRODUCTION_GATE.md) for the remaining hosted-product work.

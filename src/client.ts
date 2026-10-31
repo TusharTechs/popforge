@@ -1,12 +1,12 @@
 import { io, type Socket } from 'socket.io-client';
-import { ForgeEngine, initialState, restoreState, remix, type Command, type ForgeState, type Scene } from '../shared/engine';
+import { ForgeEngine, EngineRecoverySchema, initialState, restoreState, remix, type Command, type ForgeState, type Scene } from '../shared/engine';
 import type { TwitchStatus } from '../server/twitch';
 
-const KEY='popforge.studio.v1';
-export type Connection={mode:'starting'|'server'|'browser'|'offline';twitch:TwitchStatus;codex:boolean;overlayToken:string;error:string|null;sources:{visual:number;audio:number}};
+const KEY='popforge.studio.v2';
+export type Connection={storage?:{healthy:boolean;error:string|null};mode:'starting'|'server'|'browser'|'offline';twitch:TwitchStatus;codex:boolean;overlayToken:string;error:string|null;sources:{visual:number;audio:number}};
 const emptyTwitch:TwitchStatus={configured:false,connected:false,listening:false,name:null,category:null,error:null};
-let localState=initialState();try{localState=restoreState(JSON.parse(localStorage.getItem(KEY)??'null'));}catch{}
-let engine=new ForgeEngine(localState);
+function browserEngine(){try{const raw=JSON.parse(localStorage.getItem(KEY)??'null');if(raw?.state)return new ForgeEngine(restoreState(raw.state),EngineRecoverySchema.parse(raw.recovery));const legacy=localStorage.getItem('popforge.studio.v1');return new ForgeEngine(legacy?restoreState(JSON.parse(legacy)):initialState());}catch{return new ForgeEngine();}}
+let engine=browserEngine();
 let state:ForgeState=engine.state;
 let connection:Connection={mode:'starting',twitch:emptyTwitch,codex:false,overlayToken:'',error:null,sources:{visual:0,audio:0}};
 let socket:Socket|undefined;
@@ -14,8 +14,8 @@ let channel:BroadcastChannel|undefined;
 const stateListeners=new Set<()=>void>();const connectionListeners=new Set<()=>void>();
 const notifyState=()=>stateListeners.forEach(f=>f());
 const updateConnection=(patch:Partial<Connection>)=>{connection={...connection,...patch};connectionListeners.forEach(f=>f());};
-function save(){state=engine.state;try{localStorage.setItem(KEY,JSON.stringify(state));channel?.postMessage(state);}catch{}notifyState();}
-function syncFromStorage(){try{const raw=localStorage.getItem(KEY);if(raw){state=restoreState(JSON.parse(raw));engine.state=state;notifyState();}}catch{}}
+function save(){state=engine.state;try{const checkpoint={state,recovery:engine.recovery()};localStorage.setItem(KEY,JSON.stringify(checkpoint));channel?.postMessage(checkpoint);}catch{}notifyState();}
+function syncFromStorage(){try{const raw=localStorage.getItem(KEY);if(raw&&JSON.parse(raw)?.state?.revision===engine.state.revision)return;}catch{}engine=browserEngine();state=engine.state;notifyState();}
 let initialized=false;
 export const client={
   subscribe:(f:()=>void)=>{stateListeners.add(f);return()=>{stateListeners.delete(f);};},
@@ -30,12 +30,13 @@ export const client={
       if(!response.headers.get('content-type')?.includes('application/json'))throw new Error('STATIC_DEMO');
       const data=await response.json();
       if(!response.ok){updateConnection({mode:'offline',error:data.error??'Cannot open this source.'});return;}
-      state=restoreState(data.state);notifyState();
+      state=restoreState(data.state);notifyState();if(data.storage)updateConnection({storage:data.storage});
       updateConnection({mode:'server',twitch:data.twitch,codex:!!data.codex,overlayToken:data.overlayToken??token??'',sources:data.sources??{visual:0,audio:0}});
       socket=io({auth:viewer?{token,viewer:true,surface:location.pathname.slice(1)}:{},reconnection:true});
       socket.on('state',(s:ForgeState)=>{state=restoreState(s);notifyState();});
       socket.on('twitch',(t:TwitchStatus)=>updateConnection({twitch:t}));
       socket.on('sources',(sources:Connection['sources'])=>updateConnection({sources}));
+      socket.on('storage',(storage:NonNullable<Connection['storage']>)=>updateConnection({storage}));
       socket.on('overlayToken',(overlayToken:string)=>updateConnection({overlayToken}));
       socket.on('disconnect',(reason)=>updateConnection({mode:'offline',sources:{visual:0,audio:0},error:reason==='io server disconnect'?'This source link was replaced. Copy the new link from PopForge.':'The local companion disconnected. Reconnecting…'}));
       socket.on('connect',()=>updateConnection({mode:'server',error:null}));
@@ -60,7 +61,7 @@ export const client={
         setTimeout(()=>{initialized=false;void client.init(viewer);},3000);return;
       }
       updateConnection({mode:'browser'});
-      if('BroadcastChannel'in window){channel=new BroadcastChannel('popforge-studio');channel.onmessage=e=>{state=restoreState(e.data);engine.state=state;notifyState();};}
+      if('BroadcastChannel'in window){channel=new BroadcastChannel('popforge-studio');channel.onmessage=e=>{try{engine=new ForgeEngine(restoreState(e.data.state),EngineRecoverySchema.parse(e.data.recovery));state=engine.state;notifyState();}catch{}};}
       window.addEventListener('storage',e=>{if(e.key===KEY)syncFromStorage();});
       if(!viewer)setInterval(()=>{syncFromStorage();if(engine.tick())save();},500);
     }

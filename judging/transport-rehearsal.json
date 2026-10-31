@@ -1,0 +1,20 @@
+{
+  "kind": "INTERNAL LOCAL SOCKET TRANSPORT REHEARSAL",
+  "at": "2026-10-31T04:15:21.928Z",
+  "syntheticDemoEvents": 500,
+  "localReaderSockets": 20,
+  "acceptedActions": 500,
+  "allReadersConverged": true,
+  "elapsedMs": 3045,
+  "ackMs": {
+    "median": 5.66,
+    "p95": 9.09
+  },
+  "realTwitchConnection": false,
+  "realViewersCreated": 0,
+  "limitations": [
+    "Localhost sockets with synthetic demo commands only.",
+    "Acknowledgment time includes local durable checkpoint writes; it is not OBS render latency.",
+    "Not Twitch rate-limit, Internet, remote-device, large-audience, retention, or growth evidence."
+  ]
+}

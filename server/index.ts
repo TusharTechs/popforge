@@ -11,6 +11,7 @@ import {generateScene} from './generator.js';
 import {TwitchBridge} from './twitch.js';
 import {installRelay} from './relay.js';
 import {LocalIdentity} from './local-identity.js';
+import {RuntimeStore} from './runtime-store.js';
 
 const port=Number(process.env.PORT??4317);
 const origin=process.env.APP_ORIGIN??`http://localhost:${port}`;
@@ -23,26 +24,28 @@ const identity=new LocalIdentity(dataDirectory);
 let overlayToken=identity.overlayToken;
 const sessions=new Map<string,number>();const oauth=new Map<string,{session:string,expires:number}>();
 const stateFile=path.join(dataDirectory,'state.json');
-let saved=initialState();try{saved=restoreState(JSON.parse(await readFile(stateFile,'utf8')));}catch{}
+const runtimeStore=new RuntimeStore(dataDirectory);const recovered=runtimeStore.load();
+let saved=recovered?.state??initialState();if(!recovered)try{saved=restoreState(JSON.parse(await readFile(stateFile,'utf8')));}catch{}
 // Private vote/cooldown ledgers are intentionally not persisted. Never resume a live
 // round or vote with an incomplete ledger after a process restart.
 if(saved.round.status==='playing'||saved.round.status==='paused')saved.round={...initialState().round,remaining:saved.scene.duration*1000};
 if(saved.poll?.status==='open')saved.poll={...saved.poll,status:'closed',winner:null};
 // Mood-vote identity ledgers are private/in-memory, so reopen suggestions fresh.
-saved.lounge.vibeVotes=[0,0,0,0];
+if(!recovered)saved.lounge.vibeVotes=[0,0,0,0];
 saved.lounge.effects=[];
 if(saved.lounge.break.status==='running')saved.lounge.break.status='resting';
-const engine=new ForgeEngine(saved);
+const engine=new ForgeEngine(saved,recovered?.recovery);
 const io=new Server(http,{serveClient:false,maxHttpBufferSize:16000,allowRequest:(req,cb)=>cb(null,!req.headers.origin||allowedOrigins.has(req.headers.origin))});
 const cookie=(raw='')=>raw.split(';').map(p=>p.trim().split('=')).find(p=>p[0]==='popforge_session')?.[1];
 const valid=(id?:string)=>!!id&&(sessions.get(id)??0)>Date.now();
-const equal=(a:unknown,b:string)=>typeof a==='string'&&a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
+const equal=(a:unknown,b:string)=>typeof a==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 const snapshot=()=>JSON.parse(JSON.stringify(engine.state));
 const viewerSnapshot=()=>{const s=snapshot();s.lounge.pending=[];s.proposals=[];return s;};
 let broadcastTimer:ReturnType<typeof setTimeout>|undefined;
-let dirty=false;
-function notify(){dirty=true;if(!broadcastTimer)broadcastTimer=setTimeout(()=>{io.to('control').emit('state',snapshot());io.to('viewer').emit('state',viewerSnapshot());io.emit('twitch',bridge.status);broadcastTimer=undefined;},100);}
-const bridge=new TwitchBridge(engine,notify,()=>{const r=recap(engine.state);return `${r.moments.map(m=>m.title).join(' · ')||'A new chapter is starting.'} ${r.action}`;},identity);
+let dirty=false;let storageError:string|null=null;
+function checkpoint(){try{runtimeStore.save(engine);storageError=null;dirty=false;}catch{storageError='Local changes could not be saved. Check disk space and permissions before continuing.';}return storageError===null;}
+function notify(){dirty=true;if(!broadcastTimer)broadcastTimer=setTimeout(()=>{checkpoint();io.to('control').emit('storage',{healthy:storageError===null,error:storageError});io.to('control').emit('state',snapshot());io.to('viewer').emit('state',viewerSnapshot());io.emit('twitch',bridge.status);broadcastTimer=undefined;},100);}
+const bridge=new TwitchBridge(engine,notify,()=>{const r=recap(engine.state);return `${r.moments.map(m=>m.title).join(' · ')||'A new chapter is starting.'}${r.world.length?' Our garden keeps '+r.world.join(', ')+'.':''} ${r.action}`;},identity);
 const sources=()=>({visual:[...io.sockets.sockets.values()].filter(s=>s.data.role==='viewer'&&s.data.surface==='overlay').length,audio:[...io.sockets.sockets.values()].filter(s=>s.data.role==='viewer'&&s.data.surface==='sound').length});
 const notifySources=()=>io.to('control').emit('sources',sources());
 
@@ -60,7 +63,7 @@ app.get('/api/bootstrap',(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   const id=cookie(req.headers.cookie);
   if(!valid(id)){const s=token();sessions.set(s,Date.now()+24*60*60*1000);res.cookie('popforge_session',s,{httpOnly:true,sameSite:'lax',secure:origin.startsWith('https:'),maxAge:24*60*60*1000});}
-  res.json({backend:true,state:snapshot(),overlayToken,twitch:bridge.status,sources:sources(),codex:process.env.ENABLE_CODEX==='true'});
+  res.json({backend:true,state:snapshot(),overlayToken,twitch:bridge.status,sources:sources(),storage:{healthy:storageError===null,error:storageError},codex:process.env.ENABLE_CODEX==='true'});
 });
 app.get('/api/view',(req,res)=>{
   if(!equal(req.query.token,overlayToken))return res.status(403).json({error:'This overlay link expired. Copy a new link from the studio.'});
@@ -113,18 +116,18 @@ io.on('connection',socket=>{
     if(typeof ack!=='function')return;
     if(socket.data.role!=='control')return ack({error:'This source is read-only.'});
     if(Date.now()-lastCommand<60)return ack({error:'Please slow down.'});lastCommand=Date.now();
-    try{engine.dispatch(command);notify();ack({ok:true});}catch(e){ack({error:e instanceof Error?e.message:'Invalid command.'});}
+    try{engine.dispatch(command);if(!checkpoint())throw new Error(storageError!);notify();ack({ok:true});}catch(e){ack({error:e instanceof Error?e.message:'Invalid command.'});}
   });
   socket.on('demo-chat',(message,ack)=>{
     if(typeof ack!=='function')return;
     if(socket.data.role!=='control')return ack({error:'This source is read-only.'});
     if(bridge.status.connected)return ack({error:'Demo input is disabled while Twitch is connected.'});
-    try{const m=z.object({user:z.string().min(1).max(40),text:z.string().min(1).max(500)}).parse(message);engine.ingest(m.user,m.text,'demo');notify();ack({ok:true});}catch{ack({error:'Invalid demo message.'});}
+    try{const m=z.object({user:z.string().min(1).max(40),text:z.string().min(1).max(500)}).parse(message);engine.ingest(m.user,m.text,'demo');if(!checkpoint())throw new Error(storageError!);notify();ack({ok:true});}catch{ack({error:'Invalid demo message.'});}
   });
 });
 setInterval(()=>{if(engine.tick())notify();for(const [key,expiry]of sessions)if(expiry<Date.now())sessions.delete(key);for(const[key,pending]of oauth)if(pending.expires<Date.now())oauth.delete(key);},250).unref();
 // Public state is separate from the encrypted local identity and Twitch credentials.
-setInterval(async()=>{if(!dirty)return;dirty=false;try{await mkdir(path.dirname(stateFile),{recursive:true});await writeFile(stateFile+'.tmp',JSON.stringify(snapshot()));await rename(stateFile+'.tmp',stateFile);}catch{dirty=true;}},2000).unref();
+setInterval(()=>{if(dirty)checkpoint();},2000).unref();
 let closeDevelopmentServer:(()=>Promise<void>)|undefined;
 if(process.env.NODE_ENV==='production'){
   app.use(express.static(path.resolve('dist')));app.get('/{*splat}',(_req,res)=>res.sendFile(path.resolve('dist/index.html')));
@@ -133,5 +136,5 @@ if(process.env.NODE_ENV==='production'){
 }
 http.listen(port,'127.0.0.1',()=>{console.log(`PopForge studio ready: ${origin}\nLocal broadcaster companion · Twitch ${bridge.status.configured?'configured':'not configured'} · Codex ${process.env.ENABLE_CODEX==='true'?'enabled':'disabled'}`);void bridge.restore();});
 let shuttingDown=false;
-async function shutdown(){if(shuttingDown)return;shuttingDown=true;relay.close();bridge.stop();await closeDevelopmentServer?.();io.close();http.close();}
+async function shutdown(){if(shuttingDown)return;shuttingDown=true;relay.close();bridge.stop();if(broadcastTimer){clearTimeout(broadcastTimer);broadcastTimer=undefined;}checkpoint();await closeDevelopmentServer?.();io.close();http.close();}
 process.once('SIGTERM',()=>void shutdown());process.once('SIGINT',()=>void shutdown());

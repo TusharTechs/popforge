@@ -8,7 +8,7 @@
 - Event history is capped at 80 and chat at 50 messages. A recap includes up to three recorded events from the chosen time window; it is not a full stream transcript or AI inference about gameplay.
 - Voice is optional browser speech recognition for a keyword. Availability varies by browser; its service may process audio remotely. It is never enabled automatically.
 - No Bits wagering, point payouts, automated audiovisual bounty settlement, or public Twitch Extension is included.
-- Round and poll snapshots persist, but in-memory anti-duplication ledgers do not survive a companion restart. The companion returns restored active rounds to standby and closes restored open polls to prevent continuing with incomplete ledgers. In a browser-only demo, reloading also returns a fresh local ledger; an open round continues from its persisted progress. This demo does not provide adversarial vote integrity.
+- Runtime state and bounded private recovery ledgers now checkpoint together. Active rounds return to standby and ordinary polls close on restart. World votes resume only with matching decision IDs and consistent vote counts. Recent deduplication covers the latest 20,000 event IDs; maps are capped at 50,000 identities. This is local bounded recovery, not unlimited exactly-once delivery. Browser rehearsal stores its own recovery envelope in localStorage; it is not adversarial server authority.
 - Simple particle physics illustrates the scene. Chat actions and time determine the outcome, not vision detection or particle hits.
 - Feature icons use Lucide; scene illustrations are original code-generated canvas/CSS artwork. Google Fonts is optional; system fonts remain usable offline.
 - Do not expose the local Node service to the public Internet without adding durable broadcaster identity, tenant isolation, HTTPS, production secret management, and public viewer transport. Local encrypted credential persistence does not turn this into a multi-tenant service.
@@ -18,7 +18,7 @@
 - Music includes a procedural browser synthesizer plus three original synthesized WAV loops; no commercial recordings are bundled. Playback depends on Web Audio and user activation. OBS routing and a non-silent stereo recording have been verified. The rehearsal mix measured −47.9 dB mean and −33.9 dB peak; it is quiet, and final perceptual listening and voice balance remain a demo check.
 - Ambient effects are bounded representations of contributions, not one physics entity per viewer. Fullscreen lounge backgrounds are optional and the streamer decides when they replace the gameplay scene.
 - Break nudges are private browser-local UI reminders available while the dashboard is open. They do not infer stress, measure health, or promise to treat burnout.
-- Server restart restores an active breather as an open-ended pause, clears transient effects, and resets mood suggestion counts because identity ledgers are not persisted. Approved notes and community totals persist.
+- Server restart restores an active breather as an open-ended pause, clears transient effects, and restores mood suggestions when matching recovery ledgers are available (legacy state without recovery resets them). Approved notes and community totals persist.
 - Nightshift was researched but is not integrated. No third-party service installation or payment is required for the comfort features.
 
 ## Creator Relay
@@ -26,7 +26,7 @@
 - Relay is a two-creator, same-computer prototype. Invitation links are localhost-only and cannot reach remote collaborators; a secure hosted multi-tenant service would be required. Guest accounts must explicitly authorize their own Twitch credentials. No directory or automated matching exists.
 - Real two-broadcaster Relay OAuth and simultaneous Twitch chat have not yet been verified end to end. Relay pauses if either chat connection drops. Memory-only approvals and vote ledgers reset on process restart; reconnect and create a fresh invitation.
 - A raid handoff presents the native command for the host to execute; it does not start or verify a Twitch raid, and the Relay overlay is a separate OBS source.
-- Load rehearsals run only against the in-browser engine. They do not simulate network transport, Twitch limits, concurrent devices, or actual viewer growth.
+- The Relay load lab runs against the in-browser engine. A separate transport script exercises real localhost HTTP/Socket.io with isolated synthetic demo actions and reader sockets; it does not create Twitch viewers or test Twitch limits, Internet devices, OBS rendering load, or actual viewer growth.
 - Up to 100,000 votes and 200,000 event IDs are accepted per episode. Excess events are rejected rather than risking duplicate votes. A tied or empty decision has no automatic winner.
 
 ## Returning to the studio
@@ -41,7 +41,7 @@
 
 ## Community memory update
 
-The lasting garden stores live contributions and up to 24 flower colors across snapshots and fresh sessions. Browser rehearsal has a separate garden. Remote Relay, independent pilots, and a public service remain future work.
+The lasting garden stores live contributions, up to 24 flower colors, three authored landmarks, and up to 12 building chapters. Blooms earn seeds; free chat choices require explicit creator build approval. Ties and empty votes do not spend seeds. Live world state survives fresh sessions; browser rehearsal is separate, persists reload, and clears on rehearsal reset. Remote Relay, independent pilots, and a public service remain future work.
 
 ## Verified runtime and OBS evidence — 30 October 2026
 
@@ -52,3 +52,11 @@ Real host OAuth restoration, a second account's !heart event, OBS source renderi
 An actual 35.43-second OBS rehearsal was saved as H.264 1280 × 720 at 30 fps with 48 kHz stereo AAC. Extracted frames show the garden and the lounge scene change. Audio analysis confirms a non-silent, quiet signal; perceptual listening quality has not been verified. No live chat event was sent during this recording. Twitch broadcasting remained off. This is a rehearsal asset, not the complete submission video.
 
 The broadcast route renders trusted scene data directly to canvas for CEF alpha compatibility; generated executable code is never loaded. Private previews continue to use a sandboxed iframe.
+
+## Recovery, setup, and evidence limits — 31 October
+
+The canonical `.data/runtime.json` checkpoint contains state and private ledgers; legacy `.data/state.json` migrates only when no runtime checkpoint exists. File contents are fsynced and atomically renamed with owner-only permissions and a checksum. This detects accidental corruption, not malicious edits. A corrupt checkpoint stops startup and preserves bytes. Control actions checkpoint before success acknowledgment; Twitch/timer changes checkpoint at the 100 ms batching boundary, so an abrupt crash can lose a pending batch. Failed writes surface an error and retry, but in-memory changes can precede a failed write. Use one companion per data directory; this is not a distributed database or power-loss-proof journal.
+
+The OBS starter collection was imported and rendered in OBS 33 on this Mac; both picture and sound sockets connected. This check used an isolated companion with Twitch disabled and did not prove a fresh live chat event, enabled audio playback, recording, or broadcasting. The export includes read-only bearer URLs and must stay private.
+
+The `/pilot` observer report records manual outcomes and time including idle/reading. Identity and success are not independently verified. The owner chose self-rehearsal first; no completed independent creator pilot is claimed.

@@ -54,3 +54,11 @@ OBS saved a 35.43-second local rehearsal, H.264 1280 × 720 at 30 fps with 48 kH
 Audio analysis: mean −47.9 dB, peak −33.9 dB. This verifies a non-silent signal, not perceptual listening quality; check the quiet music against narration before final submission. OBS finalized the file successfully. Broadcasting remained off, microphone was muted, and no new Twitch command was captured in this rehearsal.
 
 Evidence assets are kept outside the source checkout: popforge-obs-rehearsal.mp4, popforge-recording-verification.json, popforge-recording-frame-start.png, and popforge-recording-frame-lounge.png. The MP4 is remuxed without re-encoding from the original OBS MOV. These are local evidence assets, not a public YouTube submission. Record the remaining real garden contributions, recap, Codex development segment, and narration before assembling the final under-three-minute video.
+
+## New signature loop and own rehearsal
+
+Use the four tasks at `/pilot` for the owner’s rehearsal first. Record outcomes and help needed honestly; the JSON is an observer report, not automatic success verification. Do not relabel a self-rehearsal as independent evidence.
+
+For the final demo, compress the garden segment to show five accepted real contributions earning a seed, a real second account sending `!grow pond` in an open choice, creator approval, the resulting place in OBS, and recap context. This should replace generic feature-tour footage, keeping the finished video under three minutes. The new world command has automated and browser coverage but still needs this real Twitch/OBS capture.
+
+The downloadable starter was imported successfully by the owner into OBS 33.0.0; separate picture and sound sources connected to the isolated test companion. That import did not start broadcasting or recording and did not verify a new sound-playback gesture. Download a collection from the intended live companion before final recording; test-port source URLs keep pointing to the test port.

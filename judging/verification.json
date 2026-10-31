@@ -1,9 +1,9 @@
 {
-  "review_date": "2026-10-30",
+  "review_date": "2026-10-31",
   "runtime_source_baseline": "3931270409a1604ada432d851154d14fe80500c3",
-  "runtime_code_changed_by_documentation_review": false,
+  "runtime_code_changed_by_documentation_review": true,
   "tests": {
-    "passed": 41,
+    "passed": 50,
     "failed": 0,
     "skipped": 0
   },
@@ -12,7 +12,8 @@
     "install": "passed",
     "build": "passed",
     "tests": "41 passed",
-    "private_env_or_runtime_data_copied": false
+    "private_env_or_runtime_data_copied": false,
+    "date": "2026-10-30"
   },
   "dependency_audit": {
     "info": 0,
@@ -22,7 +23,7 @@
     "critical": 0,
     "total": 0
   },
-  "remaining_build_warning": "Main minified JavaScript chunk approximately 541 KB",
+  "remaining_build_warning": "Earlier large-main-chunk warning resolved; application/vendor split",
   "screenshots": [
     {
       "path": "docs/assets/community-garden.png",
@@ -70,7 +71,7 @@
     ],
     "new_obs_recording": false,
     "approximate_minified_js_kb": {
-      "application": 177,
+      "application": 204,
       "vendor": 373
     },
     "public_preview_http_check": {
@@ -80,5 +81,15 @@
       "document_contains_popforge": true,
       "login_form_observed": false
     }
+  },
+  "community_world_update": {
+    "tests": 50,
+    "world_browser_reload": "passed",
+    "real_twitch_world_choice": "not yet exercised",
+    "private_recovery_process_test": "passed",
+    "obs_starter_import": "rendered; visual=1 audio=1; isolated port 14321; no broadcast or recording",
+    "guided_observation": "tooling QA only; no completed independent pilot",
+    "transport_report": "judging/transport-rehearsal.json",
+    "recovery_limits": "bounded IDs/maps; abrupt crash can lose pending 100ms Twitch/timer batch"
   }
 }

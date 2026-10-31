@@ -133,6 +133,20 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
       for(let k=0;k<5;k++){const a=k*Math.PI*2/5;dot(x+Math.cos(a)*5,y-h+Math.sin(a)*5,4,color);}dot(x,y-h,2.5,'#ffe3a6');
     }
     if(!n){ctx.textAlign='center';ctx.fillStyle='#375744';ctx.font='600 12px sans-serif';roundRect(534,281,171,24,12,'#edf1dfe8');ctx.fillStyle='#375744';ctx.fillText('Your first bloom starts here',620,297);ctx.textAlign='left';}
+    // Community decisions become persistent, visible places, never decorative votes.
+    const landmarks=memory.landmarks??[];
+    if(landmarks.includes('pond')){
+      ctx.fillStyle='#6bada8';ctx.beginPath();ctx.ellipse(798,394,49,13,-.12,0,Math.PI*2);ctx.fill();ellipse(798,394,47,11,-.12,'#d9efdc99');
+      for(let i=0;i<3;i++){ctx.strokeStyle='#e3f0dd77';ctx.beginPath();ctx.moveTo(774+i*13,391+i*3);ctx.lineTo(789+i*10,391+i*3);ctx.stroke();}dot(820,390,3,'#e9d3a1');
+    }
+    if(landmarks.includes('nook')){
+      roundRect(785,278,60,13,4,'#9e785c');roundRect(790,291,5,23,2,'#806647');roundRect(835,291,5,23,2,'#806647');
+      roundRect(783,257,64,15,5,'#b49771');ctx.fillStyle='#f2e5b7';ctx.beginPath();ctx.moveTo(806,277);ctx.lineTo(806,263);ctx.lineTo(817,268);ctx.lineTo(829,263);ctx.lineTo(829,277);ctx.lineTo(817,281);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='#8b9b72';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(817,268);ctx.lineTo(817,281);ctx.stroke();
+    }
+    if(landmarks.includes('lanterns')){
+      for(let i=0;i<4;i++){const x=445+i*12,y=335+i*17;ctx.strokeStyle='#54725b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y+23);ctx.lineTo(x,y-7);ctx.lineTo(x+10,y-7);ctx.stroke();const light=ctx.createRadialGradient(x+10,y,1,x+10,y,19);light.addColorStop(0,'#ffdda375');light.addColorStop(1,'#ffdda300');ctx.fillStyle=light;ctx.fillRect(x-9,y-19,38,38);roundRect(x+5,y-5,10,13,3,'#ffebaf');}
+    }
     // Copper watering can and a short garden path anchor the scene.
     roundRect(790,326,30,29,7,'#b48662');ctx.strokeStyle='#a77b59';ctx.lineWidth=4;ctx.beginPath();ctx.arc(820,338,11,-Math.PI/2,Math.PI/2);ctx.stroke();ctx.beginPath();ctx.moveTo(791,337);ctx.lineTo(775,326);ctx.lineTo(770,330);ctx.stroke();
     for(let i=0;i<3;i++){ctx.fillStyle='#dedfc4';ctx.beginPath();ctx.ellipse(624+i*7,402+i*11,20+i*4,4+i,0,0,Math.PI*2);ctx.fill();}
