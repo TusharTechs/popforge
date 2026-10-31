@@ -40,5 +40,45 @@
     "No retention or viewer-capacity measurement",
     "Final YouTube video and actual Devpost submission pending",
     "Private repository access is owner-managed"
-  ]
+  ],
+  "follow_up": {
+    "date": "2026-10-31",
+    "scope": "Scene and studio visual pass, mobile edge fix, public browser preview",
+    "public_preview_authorized": true,
+    "github_repository_remains_private": true,
+    "browser_checks": [
+      "Production build loaded with no observed console errors",
+      "Five sample garden contributions completed the round and grew a rehearsal flower; live contributions stayed zero",
+      "390x844 workshop layout: visible stage, caption below art, no visible white side strips or horizontal document overflow"
+    ],
+    "source_screenshots": [
+      {
+        "path": "docs/assets/greenhouse-preview.png",
+        "sha256": "4b23c375d6c68a27f45edda306ff914e45c51d2a158136d032911f16bcfa4e76",
+        "source": "actual browser rehearsal capture"
+      },
+      {
+        "path": "docs/assets/moon-preview.png",
+        "sha256": "ed961619b7d96a9b1bc55685cb3bafcc0d16a7a8e736aa420cb65b0df9c9e11d",
+        "source": "actual browser rehearsal capture"
+      },
+      {
+        "path": "docs/assets/focus-preview.png",
+        "sha256": "3ffdb45bb2ae019251001f0d218bf9c3ccc8dfb1f57e50172a7b422cf964e25b",
+        "source": "actual browser rehearsal capture"
+      }
+    ],
+    "new_obs_recording": false,
+    "approximate_minified_js_kb": {
+      "application": 177,
+      "vendor": 373
+    },
+    "public_preview_http_check": {
+      "cookies_sent": false,
+      "status": 200,
+      "redirected": false,
+      "document_contains_popforge": true,
+      "login_form_observed": false
+    }
+  }
 }

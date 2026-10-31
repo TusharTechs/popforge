@@ -7,3 +7,23 @@
 .memory-garden{padding:25px;margin-top:24px}.memory-garden h2{font:500 22px 'Space Grotesk',sans-serif;margin:12px 0}.memory-garden p{font-size:12px;line-height:1.9;color:var(--muted);margin:10px 0}.memory-flowerbed{display:flex;gap:15px;flex-wrap:wrap;align-items:end;min-height:85px;padding:20px;border-radius:14px;background:#0002;border-bottom:2px solid #8ce5ba44;margin:20px 0}.memory-flowerbed>span{font-size:35px}.memory-flowerbed small{font-size:12px;color:var(--muted)}.preview-sparkle-setting{display:flex;align-items:center;gap:10px;font-size:12px;margin-top:20px;color:var(--muted)}.memory-demo{font-size:10px!important}.preview-cursor-glow{display:none;pointer-events:none;position:absolute;left:var(--cursor-x,50%);top:var(--cursor-y,50%);width:60px;height:60px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#e2ffb449,transparent 70%);z-index:2}.cursor-glow-enabled:hover .preview-cursor-glow{display:block}.cursor-glow-enabled iframe{pointer-events:none}@media(pointer:coarse),(prefers-reduced-motion:reduce){.preview-cursor-glow{display:none!important}.cursor-glow-enabled iframe{pointer-events:auto}}
 
 .verification-checklist{padding:22px;margin-top:24px}.verification-checklist summary{cursor:pointer;font-size:14px}.verification-checklist p{font-size:12px;line-height:1.8;color:var(--muted);margin:18px 0}.verification-checklist label{display:flex;align-items:flex-start;gap:12px;margin:18px 0;font-size:12px;line-height:1.7}.verification-checklist input{margin-top:4px;accent-color:#dff69a}
+
+/* A warm studio frame, with the stage available on small screens too. */
+.live-home:not(.live-dock) .live-heading{padding:28px 30px;border:1px solid var(--border);border-radius:24px;background:radial-gradient(ellipse at 92% 15%,#d9e5aa18,transparent 55%),linear-gradient(115deg,#ffffff07,transparent);position:relative;overflow:hidden;gap:22px}
+.live-home:not(.live-dock) .live-heading h1{font-size:clamp(28px,3vw,40px);line-height:1.17;letter-spacing:-1.3px;max-width:650px}
+.live-heading .eyebrow{letter-spacing:2px;font-size:9px}.live-heading p{line-height:1.9}
+.live-home .panel{border-radius:22px}.live-home .connection-steps{background:linear-gradient(130deg,#ffffff04,transparent),var(--surface)}
+.moment-choices button{border-radius:15px;background:linear-gradient(145deg,#ffffff05,transparent);transition:border-color .18s,background .18s,transform .18s}
+.moment-choices button:hover{transform:translateY(-2px);border-color:#bad09780}
+.moment-choices button[aria-pressed=true]{background:radial-gradient(ellipse at 100% 0,#dff69a1f,transparent 75%),#dff69a0c;box-shadow:inset 0 0 0 1px #dff69a25}
+.moment-choices button:nth-child(2)>svg:first-child{color:#c6b6ed}.moment-choices button:nth-child(3)>svg:first-child{color:#edc098}
+.live-preview{background:radial-gradient(ellipse at 50% 45%,#426357,#233e35);border-block:1px solid #ffffff0d}
+.live-preview-panel>.launch-section-title{background:linear-gradient(100deg,#ffffff05,transparent)}
+.live-preview-footer{background:linear-gradient(140deg,#ffffff03,transparent)}
+.memory-garden{background:radial-gradient(ellipse at 100% 0,#c5dbad12,transparent 60%),var(--surface)!important}
+.memory-flowerbed{background:linear-gradient(160deg,#cfe7bd0c,#152e2226);border:1px dashed #b6c9a835;border-bottom:2px solid #a4cba94d;border-radius:18px}
+@media(max-width:1100px){.live-preview-panel{display:block}.live-preview{max-height:420px}.live-home:not(.live-dock) .live-heading{padding:24px}.live-content-grid{gap:22px}}
+@media(max-width:700px){.live-home:not(.live-dock) .live-heading{padding:23px 20px;border-radius:19px}.live-home:not(.live-dock) .live-heading h1{letter-spacing:-.8px;font-size:31px}.live-heading>.button{font-size:11px}.live-preview-footer{padding:18px}.live-preview-footer>strong{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.moment-choices button{transition:none}.moment-choices button:hover{transform:none}}
+
+.preview-sample{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}.preview-sample p{margin:5px 0 0;font-size:11px;line-height:1.7}

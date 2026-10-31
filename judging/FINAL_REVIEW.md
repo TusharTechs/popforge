@@ -37,3 +37,23 @@ Independent creator pilots should measure first setup time, help needed, command
 ## Evidence boundaries
 
 This review relies on inspected source, passing automated checks, earlier browser/native observations, real Twitch receipt records, genuine runtime generation, and actual recording frames/audio analysis. It does not claim an independent human usability study, listening-quality verification, a competing-project originality audit, or a forecast of finalist selection. The official rules allow several evaluation methods; these two lenses are preparation aids only.
+
+
+## Follow-up: 31 October visual/access pass
+
+The owner authorized making the browser preview public while retaining the private GitHub repository. This improves access to the rehearsal experience; it does not deploy the Twitch backend or remove real-creator developer-application setup.
+
+The garden now presents a warm illustrated greenhouse, empty planting beds, clear contribution progress, and actual earned blooms. No decorative starter flower is counted as earned progress. The renderer selects the explicitly labeled rehearsal garden when appropriate, keeping live totals separate. Cosmic scenes now have distinct mission palettes/instructions and readable particle placement. Mobile stage captions sit below the artwork; the former white edge strips are addressed with full-canvas preview painting and iframe styling. Small-screen Live controls now retain the stage preview. A browser-only sample action makes the public preview interactive without developer-lab controls.
+
+The earlier approximately 541 KB main bundle is split into roughly 177 KB application and 373 KB vendor chunks. The large-chunk warning is resolved; no startup timing improvement is claimed without measurement.
+
+These changes strengthen design and evaluation access. The original score estimates remain a historical rehearsal, not an automatically earned higher result. Higher scores still depend on the following evidence and product decisions:
+
+| Criterion | Strongest remaining gap | Concrete next improvement |
+| --- | --- | --- |
+| Innovation | A coherent combination of familiar mechanics needs a signature behavior that is difficult to substitute | Make collective choices change a persistent community world across broadcasts, then show that consequence and catch-up context working; remote, consent-based two-community collaboration is another future path |
+| Potential Impact | Ordinary creators still need a local developer application; independent adoption is unmeasured | Observe 3–5 independent first setups and later voluntary reuse; design one Twitch sign-in plus guided OBS setup for a production service |
+| Technical implementation | Hosted identity/tenant isolation, durable event ledgers, end-to-end load behavior, and remote Relay are not established | Add per-channel authorization/storage, durable deduplication/recovery, and instrumented transport tests before claiming a public multi-creator service or large audience capacity |
+| Design | The owner’s preferences and assistant checks are not independent usability evidence | Watch a new creator complete setup, start/stop a moment, and understand an empty/no-chat state without coaching; complete accessibility and narration/music listening checks |
+
+The next product investment should be setup and one distinctive community loop, with pilots guiding scope. Adding more generic presets alone is unlikely to establish stronger innovation. No numerical score increase or judging outcome is guaranteed by these changes.

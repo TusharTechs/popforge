@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="150" viewBox="0 0 600 150" role="img" aria-labelledby="title desc">
+<title id="title">PopForge</title><desc id="desc">A lime spark beside the PopForge wordmark. Made together. Remembered together.</desc>
+<rect x="1" y="1" width="598" height="148" rx="30" fill="#203c32" stroke="#78917b" stroke-width="2"/>
+<g transform="translate(38 33) rotate(-7 40 40)"><rect width="80" height="80" rx="22" fill="#eaff8c"/><path d="M45 10 18 43h20l-5 27 28-38H41Z" fill="#203128"/></g>
+<text x="145" y="80" fill="#f4f3e5" font-family="Arial,Helvetica,sans-serif" font-size="55" font-weight="700" letter-spacing="-2">popforge<tspan fill="#eaff8c">.</tspan></text>
+<text x="147" y="109" fill="#c3d3bf" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1">MADE TOGETHER. REMEMBERED TOGETHER.</text>
+</svg>

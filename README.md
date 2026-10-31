@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/popforge-logo.svg" width="520" alt="PopForge — made together, remembered together" />
+</p>
+
 # PopForge
 
 **Your chat imagines it. Your stream plays it.**
@@ -7,7 +11,7 @@ Turn a creator’s queue or coffee break into a shared community moment: a playa
 | Important link | What you’ll find |
 | --- | --- |
 | [GitHub repository](https://github.com/TusharTechs/popforge) | Complete source, original assets, tests, and setup instructions; currently private |
-| [Hosted studio preview](https://popforge-studio.tusharaggarwal274.chatgpt.site/) | Owner-private, browser-only preview; live Twitch/OBS uses the local companion |
+| [Hosted studio preview](https://popforge-studio.tusharaggarwal274.chatgpt.site/) | Public, browser-only preview; live Twitch/OBS uses the local companion |
 | [Quick start](#quick-start) · [Live setup](docs/SETUP.md) | Credential-free evaluation, Twitch connection, OBS video/audio, troubleshooting |
 | [Architecture](docs/ARCHITECTURE.md) | Mermaid system and sequence diagrams, modules, trust boundaries, persistence |
 | [Verification evidence](judging/EVIDENCE.md) | Automated checks, real Twitch, runtime Codex generation, actual OBS capture |
@@ -36,7 +40,15 @@ One chatter can complete a gentle five-contribution moment by returning after ea
 | Breather, pause/resume, end activity, and quiet controls | Cooperative games, scene proposals, polls, and gentle reactions |
 | Optional original soundscapes and break nudges | A grounded recap and moderated words of kindness |
 
-![Actual OBS recording frame: community garden](docs/assets/community-garden.png)
+![PopForge greenhouse scene in the browser preview](docs/assets/greenhouse-preview.png)
+
+The garden now has an illustrated greenhouse even before the first contribution. Earned flowers and rehearsal progress remain separate. The refreshed space scenes give cooperative defense and focus their own atmosphere.
+
+| Moonkeepers | Quiet orbit |
+| --- | --- |
+| ![Moon-defense scene in browser rehearsal](docs/assets/moon-preview.png) | ![Focus scene in browser rehearsal](docs/assets/focus-preview.png) |
+
+[Earlier OBS capture evidence](judging/EVIDENCE.md#actual-obs-recording) documents the prior renderer; it is retained as historical evidence.
 
 ## How PopForge meets the judging criteria
 
@@ -61,7 +73,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open **http://localhost:4317**. Recipe mode, scenes, lounge, original music, polls, and local recaps work without Twitch or AI credentials. For labeled synthetic chat rehearsal, open **http://localhost:4317/?lab=1**. Keep rehearsal separate from claims about actual Twitch traffic.
+Open **http://localhost:4317**. Recipe mode, scenes, lounge, original music, polls, and local recaps work without Twitch or AI credentials. Anyone can also try the public hosted preview without a PopForge account: start a moment and use its clearly labeled browser-only sample contribution button. For labeled synthetic chat rehearsal, open **http://localhost:4317/?lab=1**. Keep rehearsal separate from claims about actual Twitch traffic.
 
 For a production local build:
 
@@ -171,7 +183,7 @@ See [evidence](judging/EVIDENCE.md) for the development/runtime session distinct
 
 ## Technical and privacy boundaries
 
-The full product is a **local, single-broadcaster companion** plus an owner-private hosted preview. The hosted preview does not provide the Twitch backend. Viewers need no PopForge account because participation happens through Twitch.
+The full product is a **local, single-broadcaster companion** plus a public hosted preview. The hosted preview does not provide the Twitch backend. Viewers need no PopForge account because participation happens through Twitch.
 
 - Studio controls use a local HttpOnly session; read-only visual/audio sources have a separate token. Viewer sockets cannot mutate state even when their browser shares a studio cookie. Source links survive restarts and can be explicitly revoked.
 - Host credentials use AES-256-GCM with owner-only identity files and a separate local key. This is not an OS keychain: someone controlling the same OS account can read both files. Disconnect forgets saved authorization locally; Twitch consent revocation is separate.
@@ -186,9 +198,9 @@ Read [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) before evaluating deployment, 
 
 **Verified on 30 October 2026:** 41 tests pass; TypeScript/Vite production build succeeds; npm audit reports zero known dependency vulnerabilities in the locked dependency set. Real Twitch OAuth/EventSub, separate-chatter commands, host restoration, runtime Codex generation, OBS dock/source setup, and a 35.43-second audiovisual recording have evidence. The recording is **1280 × 720 at 30 fps**, with non-silent 48 kHz stereo AAC. Its quiet music mix needs a final listening check. Twitch broadcasting stayed off during rehearsal.
 
-The current build emits a warning for a roughly 541 KB minified main JavaScript chunk. Code splitting, independent creator pilots, remote Relay, and larger transport-scale testing are future improvements. Automated checks do not substitute for those observations.
+The 31 October visual pass adds a greenhouse garden, distinct cosmic mission scenes, a warmer studio, mobile captions below the artwork, and a sample contribution button in the public browser preview. The application bundle is now approximately 177 KB plus a separate 373 KB vendor bundle (minified); the earlier 500 KB chunk warning is resolved. This improves cache separation; startup speed has not been benchmarked. Independent creator pilots, remote Relay, and larger transport-scale testing remain future work.
 
-The final YouTube video, Devpost project/submission, private repository judge access, and confirmation of entrant declarations are outstanding. Follow [the submission checklist](judging/SUBMISSION_CHECKLIST.md); the owner-private preview alone is insufficient judge access.
+The final YouTube video, Devpost project/submission, private repository judge access, and confirmation of entrant declarations are outstanding. Follow [the submission checklist](judging/SUBMISSION_CHECKLIST.md); the public browser preview alone is insufficient judge access.
 
 ## License and acknowledgments
 

@@ -2,7 +2,7 @@
 export function renderScene(canvasOverride?:HTMLCanvasElement){
   const canvas=canvasOverride??document.querySelector('canvas')!;const ctx=canvas.getContext('2d')!;
   let disposed=false;let data:any=null;let width=960,height=540;let t=0;let last=performance.now();let stopped=false;
-  const bodies=Array.from({length:12},(_,i)=>({x:100+(i*71)%790,y:-30-i*55,vx:-12-i*2,vy:25+(i%4)*9,r:4+i%4}));
+  const bodies=Array.from({length:12},(_,i)=>({x:340+(i*47)%430,y:-30-i*55,vx:-12-i*2,vy:25+(i%4)*9,r:4+i%4}));
   let impact=0;
   const colors:Record<string,string>={lime:'#e4ff8c',lilac:'#bda7ff',amber:'#ffad70',cyan:'#8ce5de'};
   const stars=Array.from({length:80},(_,i)=>({x:((i*73.13)%100)/100,y:((i*37.71)%100)/100,r:i%5===0?1.4:.7}));
@@ -62,6 +62,84 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     const n=Math.min(l.stars,16);ctx.strokeStyle='#b9d8dd4d';ctx.lineWidth=.8;
     for(let i=0;i<n;i++){const x=330+(i*73)%260,y=85+(i*31)%110;dot(x,y,2,'#e9e7c8');if(i){ctx.beginPath();ctx.moveTo(330+((i-1)*73)%260,85+((i-1)*31)%110);ctx.lineTo(x,y);ctx.stroke();}}
   }
+  function missionWorld(){
+    const kind=data.scene.kind;const accent=colors[data.scene.accent]??colors.lime;
+    const sky=ctx.createLinearGradient(74,104,830,430);
+    sky.addColorStop(0,kind==='focus'?'#263947':kind==='reactor'?'#3d3434':'#302e4a');
+    sky.addColorStop(.6,kind==='focus'?'#1c303b':kind==='reactor'?'#263a35':'#222e42');sky.addColorStop(1,'#162b2c');
+    ctx.save();ctx.shadowColor='#0b182855';ctx.shadowBlur=32;ctx.shadowOffsetY=14;roundRect(74,104,812,330,30,sky as any);ctx.restore();
+    ctx.save();ctx.beginPath();ctx.roundRect(74,104,812,330,30);ctx.clip();
+    const glow=ctx.createRadialGradient(520,250,10,520,250,340);glow.addColorStop(0,accent+'1a');glow.addColorStop(1,accent+'00');ctx.fillStyle=glow;ctx.fillRect(74,104,812,330);
+    for(let i=0;i<55;i++){const x=90+(i*137)%780,y=114+(i*61)%290;dot(x,y,i%7===0?1.3:.6,i%3===0?'#e4eac555':'#a9b8c144');}
+    // A horizon and a few architectural lights give the cosmic stage a home.
+    ctx.fillStyle='#11292880';ctx.beginPath();ctx.moveTo(74,410);ctx.bezierCurveTo(260,362,344,423,500,396);ctx.bezierCurveTo(690,362,795,390,886,371);ctx.lineTo(886,434);ctx.lineTo(74,434);ctx.fill();
+    ctx.strokeStyle=accent+'20';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(95,410);ctx.lineTo(866,410);ctx.stroke();
+    ctx.textAlign='left';ctx.fillStyle=accent;ctx.font='600 9px sans-serif';ctx.fillText(kind==='focus'?'THE QUIET ORBIT':kind==='reactor'?'A LITTLE CHAOS LAB':'THE MOONKEEPERS',112,146);
+    ctx.fillStyle='#f2eedc';ctx.font='600 24px sans-serif';ctx.fillText(kind==='focus'?'One small task.':kind==='reactor'?'Collect the':'One moon.',112,187);ctx.fillText(kind==='focus'?'A little support.':kind==='reactor'?'little sparks.':'All of us.',112,218);
+    ctx.fillStyle='#bbcdca';ctx.font='11px sans-serif';
+    ctx.fillText(kind==='focus'?'A calm place to finish something.':kind==='reactor'?'Your keyword brings the energy.':'Keep our little corner of space safe.',112,246);
+    roundRect(112,274,128,30,15,accent+'16');ctx.fillStyle=accent;ctx.font='600 12px monospace';ctx.fillText(kind==='reactor'?`say ${data.scene.keyword}`:'chat  !shield',124,294);
+    const progress=Math.min(1,kind==='reactor'?data.charge/100:(data.round.shields||0)/data.scene.goal);
+    ctx.fillStyle='#baccc2';ctx.font='10px sans-serif';ctx.fillText(kind==='reactor'?'COMMUNITY ENERGY':'MADE TOGETHER',112,344);
+    roundRect(112,357,135,5,2.5,'#ffffff15');if(progress>0)roundRect(112,357,Math.max(5,135*progress),5,2.5,accent);
+    ctx.fillStyle='#e7eddb';ctx.font='600 12px sans-serif';ctx.fillText(kind==='reactor'?`${data.charge}% charged`:`${data.round.shields||0} / ${data.scene.goal} contributions`,112,386);
+    ctx.restore();ctx.strokeStyle=accent+'30';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(74,104,812,330,30);ctx.stroke();
+  }
+  function gardenWorld(){
+    const memory=(data.rehearsal?data.demoGarden:data.garden)??{water:0,blooms:[]};
+    const blooms=memory.blooms??[];const drops=(memory.water??0)%5;
+    const accent=colors[data.scene.accent]??colors.lilac;
+    // A self-contained illustrated stage: alpha outside, warm company inside.
+    ctx.save();ctx.shadowColor='#102b2740';ctx.shadowBlur=32;ctx.shadowOffsetY=14;
+    roundRect(74,104,812,330,30,'#e4ede2');ctx.restore();
+    ctx.save();ctx.beginPath();ctx.roundRect(74,104,812,330,30);ctx.clip();
+    const sky=ctx.createLinearGradient(0,104,0,434);sky.addColorStop(0,'#edf1df');sky.addColorStop(.52,'#cbded0');sky.addColorStop(1,'#91b4a1');ctx.fillStyle=sky;ctx.fillRect(74,104,812,330);
+    const sunshine=ctx.createRadialGradient(774,157,5,774,157,140);sunshine.addColorStop(0,'#fff1c9e0');sunshine.addColorStop(1,'#fff1c900');ctx.fillStyle=sunshine;ctx.fillRect(620,104,266,240);dot(774,157,28,'#fff3d3');
+    for(let layer=0;layer<3;layer++){
+      ctx.beginPath();ctx.moveTo(400,434);for(let x=400;x<=900;x+=12)ctx.lineTo(x,304+layer*34+Math.sin(x/90+layer*2)*18);ctx.lineTo(900,434);ctx.closePath();ctx.fillStyle=['#a4c2ae','#8bae98','#71997f'][layer];ctx.fill();
+    }
+    // Left editorial panel keeps instructions readable on any gameplay background.
+    const wash=ctx.createLinearGradient(90,0,470,0);wash.addColorStop(0,'#edf1e8');wash.addColorStop(.7,'#edf1e8f0');wash.addColorStop(1,'#edf1e800');ctx.fillStyle=wash;ctx.fillRect(74,104,440,330);
+    ctx.textAlign='left';ctx.fillStyle='#526f5a';ctx.font='600 10px sans-serif';ctx.fillText('THE LITTLE GREENHOUSE',112,145);
+    ctx.fillStyle='#233f34';ctx.font='600 31px sans-serif';ctx.fillText('A little care.',111,190);ctx.fillText('Something lasting.',111,225);
+    ctx.fillStyle='#526957';ctx.font='13px sans-serif';ctx.fillText('A shared garden, grown one hello at a time.',112,255);
+    roundRect(112,278,119,32,16,'#244c3c');ctx.fillStyle='#f3f2de';ctx.font='600 13px monospace';ctx.fillText('chat  !water',127,299);
+    ctx.fillStyle='#536b59';ctx.font='11px sans-serif';ctx.fillText('Five contributions. One new bloom.',112,333);
+    for(let i=0;i<5;i++){dot(119+i*21,354,6,i<drops?'#587e58':'#c3d2be');if(i<drops)dot(117+i*21,352,1.6,'#e9f1cc');}
+    ctx.font='600 12px sans-serif';ctx.fillStyle='#355541';ctx.fillText(`${5-drops} to the next flower`,112,385);
+    ctx.font='10px sans-serif';ctx.fillStyle='#607762';ctx.fillText(data.rehearsal?'REHEARSAL GARDEN · LIVE BLOOMS STAY SEPARATE':`${memory.water} LIVE CONTRIBUTIONS · ${blooms.length} RECENT BLOOMS`,112,410);
+    // Glasshouse, timber frame, and a warm lamp — decoration never counts as blooms.
+    ctx.save();ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(487,337);ctx.lineTo(487,217);ctx.quadraticCurveTo(487,181,522,159);ctx.lineTo(620,117);ctx.lineTo(723,160);ctx.quadraticCurveTo(756,178,756,217);ctx.lineTo(756,337);ctx.closePath();
+    const glass=ctx.createLinearGradient(490,150,750,340);glass.addColorStop(0,'#f8ffe447');glass.addColorStop(.6,'#e5f4e42c');glass.addColorStop(1,'#8cae9733');ctx.fillStyle=glass;ctx.fill();ctx.strokeStyle='#4b735d';ctx.lineWidth=5;ctx.stroke();
+    ctx.lineWidth=2;ctx.strokeStyle='#789780';
+    for(const x of [532,577,621,666,711]){ctx.beginPath();ctx.moveTo(x,337);ctx.lineTo(x,151+Math.abs(x-621)*.43);ctx.stroke();}
+    for(const y of [215,273]){ctx.beginPath();ctx.moveTo(489,y);ctx.lineTo(754,y);ctx.stroke();}
+    ctx.strokeStyle='#f5ffe585';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(509,228);ctx.lineTo(557,189);ctx.moveTo(684,251);ctx.lineTo(729,215);ctx.stroke();
+    ctx.strokeStyle='#54715c';ctx.beginPath();ctx.moveTo(620,120);ctx.lineTo(620,176);ctx.stroke();
+    const lamp=ctx.createRadialGradient(620,189,1,620,189,43);lamp.addColorStop(0,'#ffe1a380');lamp.addColorStop(1,'#ffe1a300');ctx.fillStyle=lamp;ctx.fillRect(577,146,86,86);
+    roundRect(609,177,22,23,7,'#fff0ba');roundRect(611,174,18,5,2,'#8c8061');
+    // Greenery belongs to the setting; community flowers are only drawn from memory.
+    const leaf=(x:number,y:number,r:number,angle:number,fill:string)=>{ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=fill;ctx.beginPath();ctx.ellipse(0,0,r,r*.36,0,0,Math.PI*2);ctx.fill();ctx.restore();};
+    for(let i=0;i<8;i++){const x=493+i*36;ctx.strokeStyle='#6a936b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,207);ctx.quadraticCurveTo(x-10,228,x+Math.sin(t*.4+i)*3,245+(i%3)*8);ctx.stroke();leaf(x-4,226,8,-.6,'#698c62');leaf(x+4,237,9,.5,'#86a476');}
+    // Two planting terraces provide room for up to 24 earned flowers.
+    roundRect(466,337,310,28,6,'#967559');roundRect(477,360,288,25,5,'#7a614b');
+    for(let row=0;row<2;row++){roundRect(478,321+row*35,286,19,7,'#665440');ctx.fillStyle='#8b795b';for(let i=0;i<22;i++)dot(486+i*12,327+row*35+(i%2)*3,.9,'#a0916d');}
+    const n=Math.min(24,blooms.length);
+    for(let i=0;i<n;i++){
+      const row=i<12?0:1;const col=i%12;const x=490+col*23,y=328+row*35,h=23+(i%3)*6;
+      ctx.strokeStyle='#496f4a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+Math.sin(t*.5+i)*2,y-h/2,x,y-h);ctx.stroke();leaf(x+4,y-9,6,-.5,'#6e945e');
+      const color=({mint:'#b0e1b6',moon:'#c7a9ec',sunset:'#efb28d'} as Record<string,string>)[blooms[i]]??accent;
+      for(let k=0;k<5;k++){const a=k*Math.PI*2/5;dot(x+Math.cos(a)*5,y-h+Math.sin(a)*5,4,color);}dot(x,y-h,2.5,'#ffe3a6');
+    }
+    if(!n){ctx.textAlign='center';ctx.fillStyle='#375744';ctx.font='600 12px sans-serif';roundRect(534,281,171,24,12,'#edf1dfe8');ctx.fillStyle='#375744';ctx.fillText('Your first bloom starts here',620,297);ctx.textAlign='left';}
+    // Copper watering can and a short garden path anchor the scene.
+    roundRect(790,326,30,29,7,'#b48662');ctx.strokeStyle='#a77b59';ctx.lineWidth=4;ctx.beginPath();ctx.arc(820,338,11,-Math.PI/2,Math.PI/2);ctx.stroke();ctx.beginPath();ctx.moveTo(791,337);ctx.lineTo(775,326);ctx.lineTo(770,330);ctx.stroke();
+    for(let i=0;i<3;i++){ctx.fillStyle='#dedfc4';ctx.beginPath();ctx.ellipse(624+i*7,402+i*11,20+i*4,4+i,0,0,Math.PI*2);ctx.fill();}
+    for(let i=0;i<8;i++){const x=439+(i*57)%401,y=252+(i*31)%148+Math.sin(t*.45+i)*3;dot(x,y,1.4,'#fff4c7b0');}
+    ctx.restore();ctx.restore();
+    ctx.strokeStyle='#b9ccb4';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(74,104,812,330,30);ctx.stroke();
+  }
   function reactionBursts(){
     const l=data.lounge;if(!l||l.energy==='quiet'||!l.particles||l.intensity<=0)return;
     const reduce=data.settings?.reducedMotion||stopped;const strength=l.energy==='party'?1:l.energy==='balanced'?.7:.42;
@@ -91,6 +169,7 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     ctx.clearRect(0,0,width,height);
     const atmospheric=!data.forceScene&&(data.ambientOnly||data.lounge?.showBackground||data.lounge?.break.status!=='idle');
     if(atmospheric){const fills:Record<string,string>={starlight:'#182738',rain:'#1d3438',aurora:'#193735',sunset:'#573649'};ctx.fillStyle=fills[data.lounge.mood]??'#172b2b';ctx.fillRect(0,0,width,height);}
+    if(!data.transparent&&!atmospheric){ctx.fillStyle=scene.kind==='garden'?'#243e34':'#1d3031';ctx.fillRect(0,0,width,height);}
     const scale=Math.min(width/960,height/540);ctx.save();ctx.translate(width/2,height/2);ctx.scale(scale,scale);ctx.translate(-480,-270);
     const accent=colors[scene.accent]||colors.lime;
     const active=round.status==='playing';const percent=Math.min(1,(round.shields||0)/scene.goal);
@@ -98,22 +177,15 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
       ambientWorld();reactionBursts();ctx.restore();requestAnimationFrame(frame);return;
     }
     if(!data.transparent){
-      const bg=ctx.createRadialGradient(480,270,20,480,270,580);bg.addColorStop(0,'#1e2521');bg.addColorStop(1,'#111613');ctx.fillStyle=bg;ctx.fillRect(0,0,960,540);
+      const bg=ctx.createRadialGradient(480,270,20,480,270,580);bg.addColorStop(0,scene.kind==='garden'?'#38584a':'#273d3f');bg.addColorStop(1,scene.kind==='garden'?'#243e34':'#1d3031');ctx.fillStyle=bg;ctx.fillRect(0,0,960,540);
       ctx.strokeStyle='#ffffff05';for(let x=0;x<960;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,540);ctx.stroke();}for(let y=0;y<540;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(960,y);ctx.stroke();}
     }
-    stars.forEach((s,i)=>dot(s.x*960,s.y*540,s.r,`rgba(220,240,220,${.15+(Math.sin(t*.5+i)+1)*.12})`));
-    ellipse(480,265,248,138,-.27,accent+'14');ellipse(480,265,310,195,.28,accent+'0b');
     if(scene.kind==='garden'){
-      ellipse(480,365,210,47,0,accent+'35');
-      const blooms=data.garden?.blooms??[];const n=Math.min(24,Math.max(1,blooms.length));
-      for(let i=0;i<n;i++){
-        const x=325+(i*57)%320,y=330+(i*31)%70,h=60+(i%4)*18;
-        ctx.strokeStyle='#6eaa7d';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+Math.sin(t+i)*5,y-h/2,x,y-h);ctx.stroke();
-        const bx=x,by=y-h;for(let k=0;k<5;k++){const a=k*Math.PI*2/5+t*.1;dot(bx+Math.cos(a)*10,by+Math.sin(a)*10,9,({mint:'#8ce5ba',moon:'#d2b5ff',sunset:'#ffbf96'} as Record<string,string>)[blooms[i]]??accent);}dot(bx,by,5,'#ffe19c');
-        ctx.fillStyle='#6eaa7d';ctx.beginPath();ctx.ellipse(x+9,y-h/2,13,5,-.5,0,Math.PI*2);ctx.fill();
-      }
-      dot(685,160,28,accent+'12');ctx.font='27px sans-serif';ctx.fillText('✦',675,170);
+      gardenWorld();
     }else{
+      missionWorld();
+      stars.forEach((s,i)=>dot(s.x*960,s.y*540,s.r,`rgba(220,240,220,${.15+(Math.sin(t*.5+i)+1)*.12})`));
+      ellipse(480,265,248,138,-.27,accent+'14');ellipse(480,265,310,195,.28,accent+'0b');
       const cx=480,cy=245,r=scene.kind==='focus'?76:91;
       const glow=ctx.createRadialGradient(cx,cy,5,cx,cy,200);glow.addColorStop(0,accent+'20');glow.addColorStop(1,accent+'00');ctx.fillStyle=glow;ctx.fillRect(cx-200,cy-200,400,400);
       ctx.save();ctx.translate(cx,cy);ctx.rotate(-.2+Math.sin(t*.4)*.06);
@@ -136,9 +208,10 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
         const x=cx+Math.cos(a)*200,y=cy+Math.sin(a)*90;
         ctx.save();ctx.translate(x,y);ctx.rotate(t*.2+i);roundRect(-9,-9,18,18,4,accent+'c0');ctx.restore();
       }
-      if(active||charge>=100||scene.kind==='meteor'){
+      if(scene.kind!=='focus'&&(active||charge>=100||scene.kind==='meteor')){
         const step=settings?.reducedMotion||stopped||data.lounge?.energy==='quiet'?0:dt;
         const gravity=scene.gravity==='low'?4:scene.gravity==='high'?35:14;
+        ctx.save();ctx.beginPath();ctx.rect(318,112,552,300);ctx.clip();
         for(let i=0;i<bodies.length;i++){
           const b=bodies[i];b.vy+=gravity*step;b.x+=b.vx*step;b.y+=b.vy*step;
           const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy),shieldRadius=percent>0?114:91;
@@ -146,11 +219,12 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
             const nx=dx/dist,ny=dy/dist,dotProduct=b.vx*nx+b.vy*ny;
             b.vx-=2*dotProduct*nx;b.vy-=2*dotProduct*ny;b.x=cx+nx*(shieldRadius+b.r+1);b.y=cy+ny*(shieldRadius+b.r+1);impact=.8;
           }
-          if(b.y>580||b.x<0||b.x>960){b.x=140+(i*71)%700;b.y=-30-(i%3)*50;b.vx=-12-i*2;b.vy=25+(i%4)*9;}
+          if(b.y>580||b.x<320||b.x>960){b.x=340+(i*47)%430;b.y=-30-(i%3)*50;b.vx=-12-i*2;b.vy=25+(i%4)*9;}
           ctx.strokeStyle='#ffba7050';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(b.x-b.vx*.3,b.y-b.vy*.3);ctx.lineTo(b.x,b.y);ctx.stroke();dot(b.x,b.y,b.r,'#f7bd83');
         }
         impact=Math.max(0,impact-step*2);
         if(impact>0){ctx.strokeStyle=accent+Math.floor(impact*120).toString(16).padStart(2,'0');ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,percent>0?115:93,0,Math.PI*2);ctx.stroke();}
+        ctx.restore();
       }
       if(percent>0||round.outcome==='saved'){
         ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,114,-Math.PI*.95,Math.PI*(-.95+1.9*Math.max(percent,.1)));ctx.stroke();
@@ -164,10 +238,11 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
     }
     if(active||round.status==='paused'){
       const left=round.status==='paused'?round.remaining:Math.max(0,round.deadline-Date.now());
-      roundRect(386,395,188,42,21,'#0b0f0dd9');ctx.strokeStyle=accent+'30';ctx.stroke();
-      ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 17px monospace';ctx.fillText(`${Math.floor(left/60000).toString().padStart(2,'0')}:${Math.floor(left%60000/1000).toString().padStart(2,'0')}  ·  ${round.shields}/${scene.goal}`,480,422);
+      const timerY=451;
+      roundRect(386,timerY,188,42,21,'#0b0f0dd9');ctx.strokeStyle=accent+'30';ctx.stroke();
+      ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 17px monospace';ctx.fillText(`${Math.floor(left/60000).toString().padStart(2,'0')}:${Math.floor(left%60000/1000).toString().padStart(2,'0')}  ·  ${round.shields}/${scene.goal}`,480,timerY+27);
     }else if(round.status==='ended'){
-      ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 20px sans-serif';ctx.fillText(round.outcome==='saved'?'A little chaos. A community victory.':scene.kind==='garden'?'A little progress stays with us.':scene.kind==='focus'?'Sprint ended. Take a breath.':'One cracked moon. One very good story.',480,414);
+      ctx.fillStyle=accent;ctx.textAlign='center';ctx.font='600 20px sans-serif';ctx.fillText(round.outcome==='saved'?'A little chaos. A community victory.':scene.kind==='garden'?'A little progress stays with us.':scene.kind==='focus'?'Sprint ended. Take a breath.':'One cracked moon. One very good story.',480,468);
     }
     reactionBursts();ctx.textAlign='left';ctx.restore();requestAnimationFrame(frame);
   }
@@ -179,4 +254,4 @@ export function renderScene(canvasOverride?:HTMLCanvasElement){
   if(!canvasOverride)parent.postMessage({type:'popforge:ready'},'*');requestAnimationFrame(frame);
   return {update:(next:any)=>{data=next;stopped=!!next.previewPaused;},dispose:()=>{disposed=true;removeEventListener('resize',resize);}};
 }
-export const RENDERER_DOCUMENT=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; frame-src 'none'"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}canvas{display:block;width:100%;height:100%}</style></head><body><canvas aria-label="Animated community scene"></canvas><script>(${renderScene.toString()})()</script></body></html>`;
+export const RENDERER_DOCUMENT=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; frame-src 'none'"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;color-scheme:normal}canvas{display:block;width:100%;height:100%}</style></head><body><canvas aria-label="Animated community scene"></canvas><script>(${renderScene.toString()})()</script></body></html>`;

@@ -12,7 +12,7 @@ Record actual behavior; keep browser-only rehearsal clearly labeled. Never displ
 - 2:10–2:40: Show break/return and compact controls. Include actual OBS video and audio evidence if available.
 - 2:40–2:55: State the current platform and limitations. End with the community garden and clear instructions for judges.
 
-Before submission, provide the required repository URL and access, Codex session ID, public YouTube demonstration, and tested run instructions. The owner-private static Site alone is not judge access to the complete local companion.
+Before submission, provide the required repository URL and access, Codex session ID, public YouTube demonstration, and tested run instructions. The public static Site alone is not judge access to the complete local companion.
 
 ## Live verification record
 

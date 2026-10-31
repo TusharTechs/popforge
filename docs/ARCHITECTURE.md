@@ -4,7 +4,7 @@
 
 ## Deployment shape
 
-PopForge’s complete runtime is one local Node.js companion bound to `127.0.0.1`, one broadcaster, and a studio plus OBS browser sources on that computer. Twitch transports the actual remote viewer interaction. A separately deployed static Site runs the browser rehearsal transport; it does not run Express, EventSub, credential storage, or a public viewer backend.
+PopForge’s complete runtime is one local Node.js companion bound to `127.0.0.1`, one broadcaster, and a studio plus OBS browser sources on that computer. Twitch transports the actual remote viewer interaction. A separately deployed public static Site runs the browser rehearsal transport; it does not run Express, EventSub, credential storage, or a public viewer backend.
 
 ```mermaid
 flowchart TB
@@ -46,7 +46,7 @@ flowchart TB
     Events --> Bridge
     Bridge <--> Helix
     Helix --> Chat
-    subgraph PreviewHosting["Separate owner-private static Site"]
+    subgraph PreviewHosting["Separate public static Site"]
       Demo["Browser-local engine + localStorage / BroadcastChannel"]
     end
 ```

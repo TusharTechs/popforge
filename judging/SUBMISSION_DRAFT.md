@@ -32,7 +32,7 @@ React, TypeScript, Vite, Express, Socket.io, Twurple OAuth/EventSub, Zod validat
 
 41 automated tests pass. Real Twitch chat was previously exercised with the broadcaster and a second chatter account. Runtime Codex generation, renderer readiness, and local publication have been exercised. Real Twitch authorization restored after restart. A separate account’s !heart reached EventSub and OBS displayed the updated heart total. A 35.43-second OBS rehearsal captures the garden-to-lounge change at 720p30 with non-silent stereo AAC audio. The music signal is quiet and final listening balance remains to be checked. The transient heart animation was not captured; no chat event was replayed. Twitch broadcasting stayed off.
 
-The hosted owner-private Site is a static browser preview; the complete Twitch experience runs through the local companion. Relay is a same-computer two-creator prototype and has not been verified live with two broadcasters. No public viewer service, released Twitch Extension, measured retention improvement, or independent creator pilot is claimed.
+The hosted public Site is a static browser preview; the complete Twitch experience runs through the local companion. Relay is a same-computer two-creator prototype and has not been verified live with two broadcasters. No public viewer service, released Twitch Extension, measured retention improvement, or independent creator pilot is claimed.
 
 ## Judge setup
 

@@ -14,7 +14,7 @@ npm run dev
 
 Open http://localhost:4317. Choose a quick-start garden, select Gentle, and start. Open http://localhost:4317/?lab=1 for labeled synthetic rehearsal controls; send `!water` five times with at least three seconds between contributions. Demo state and real Twitch garden state are separate. Do not interpret rehearsal participants as actual Twitch viewers.
 
-No AI key, Twitch account, payment, or PopForge viewer signup is needed for this local evaluation. Select **Recipe remix** for deterministic scene creation. The hosted preview uses a separate browser-only transport; it is not the live companion backend.
+No AI key, Twitch account, payment, or PopForge viewer signup is needed for this local evaluation. The public hosted browser preview also lets visitors start a moment and try a labeled sample contribution; it changes only that browser’s rehearsal garden. Select **Recipe remix** for deterministic scene creation. The hosted preview uses a separate browser-only transport; it is not the live companion backend.
 
 ## 2. Connect Twitch
 

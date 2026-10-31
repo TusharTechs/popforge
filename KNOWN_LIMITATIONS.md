@@ -3,7 +3,7 @@
 - This is a single-broadcaster local companion plus a static hosted browser demo, not a multi-tenant hosted Twitch service. No five-million-viewer capacity claim is made.
 - Ten scene presets share four trusted mechanics; the app does not generate arbitrary executable widgets. The Codex path outputs a validated scene specification.
 - Twitch integration was live-tested on the configured broadcaster account; a second account has verified shield and heart commands, while two-broadcaster Relay remains unverified live. Runtime Codex generation, preview, and publication have also passed a configured account test. Connections are not inferred from the UI demo.
-- The private hosted demo is for owner review. Browser demo state syncs only within the same browser profile. Use the companion for cross-browser/OBS synchronization.
+- The public hosted demo is for browser rehearsal. Browser demo state syncs only within the same browser profile. Use the companion for cross-browser/OBS synchronization.
 - The local recap page cannot be reached remotely by stream viewers. The broadcaster's authenticated `!recap` response is the first remote viewer channel. A public companion or reviewed Twitch Extension needs a later hosting/auth design.
 - Event history is capped at 80 and chat at 50 messages. A recap includes up to three recorded events from the chosen time window; it is not a full stream transcript or AI inference about gameplay.
 - Voice is optional browser speech recognition for a keyword. Availability varies by browser; its service may process audio remotely. It is never enabled automatically.

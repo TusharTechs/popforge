@@ -63,3 +63,12 @@ Audio measurement confirms a signal, not perceptual quality. Final listening bal
 - Live validation on operating systems other than the tested Mac.
 
 The first two are submission work. The remaining items constrain claims and roadmap decisions; they are not required additions to the current local product before a truthful hackathon submission.
+
+
+## 31 October browser design/access follow-up
+
+The owner explicitly authorized public preview access. The GitHub repository remains private. Public preview state is browser-local; real Twitch credentials/state are not deployed. The garden, moon, focus, and reactor share a new illustrated stage treatment. The greenhouse screenshot in README is a real browser rehearsal capture of the updated renderer; the older OBS frames above remain historical recording evidence.
+
+A browser-only sample button was exercised through five accepted garden contributions: the round completed, one rehearsal bloom appeared, and live garden contributions remained zero. The mobile workshop was inspected at 390 × 844: the stage remained visible, its caption moved below the artwork, no white side strips were visible, and document width did not exceed the viewport. Reduced motion and quiet behavior continue to use the existing renderer motion gates. No new real Twitch/OBS recording is claimed for this visual pass.
+
+Application/vendor chunk separation resolves the earlier large-main-chunk warning: approximately 177 KB application and 373 KB vendor, minified. A final build and regression suite accompany the source publication; no startup benchmark or user-retention claim is inferred.
